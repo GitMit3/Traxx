@@ -112,7 +112,7 @@ function MobileJobCard({ job, onEdit, onDelete, t, lang }: MobileJobCardProps) {
       {/* Follow-up date (if set) */}
       {job.followUpDate && (
         <div className="flex items-center gap-2 pt-0.5">
-          <Calendar size={13} className={`shrink-0 ${isOverdue ? 'text-destructive' : 'text-muted-foreground'}`} />
+          <Clock size={13} className={`shrink-0 ${isOverdue ? 'text-red-500' : isToday ? 'text-amber-500' : 'text-muted-foreground'}`} />
           <span className={`text-xs ${isOverdue ? 'text-destructive font-bold' : 'text-muted-foreground'}`}>
             {job.followUpDate}
           </span>
@@ -194,7 +194,10 @@ function DesktopJobRow({ job, onEdit, onDelete, t, lang }: DesktopJobRowProps) {
       <td className="px-4 py-3 align-middle">
         {job.followUpDate ? (
           <div className="flex flex-col gap-1">
-            <span className={`text-xs ${isOverdue ? 'text-destructive font-bold' : 'text-foreground'}`}>{job.followUpDate}</span>
+            <div className="flex items-center gap-1.5">
+              <Clock size={12} className={`shrink-0 ${isOverdue ? 'text-red-500' : isToday ? 'text-amber-500' : 'text-muted-foreground'}`} />
+              <span className={`text-xs ${isOverdue ? 'text-destructive font-bold' : 'text-foreground'}`}>{job.followUpDate}</span>
+            </div>
             {isOverdue && <Badge variant="destructive" className="px-1 py-0 h-4 text-[9px] w-fit">{t('overdue')}</Badge>}
             {isToday   && <Badge className="px-1 py-0 h-4 text-[9px] w-fit">{t('todayBadge')}</Badge>}
             {isSoon    && <Badge variant="outline" className="px-1 py-0 h-4 text-[9px] w-fit border-amber-500 text-amber-600 font-bold">{t('soon')}</Badge>}

@@ -17,7 +17,7 @@ import {
   Textarea,
   toast
 } from '@blinkdotnew/ui'
-import { Briefcase, Plus, LayoutDashboard, Settings, LogOut, Clock, Search, FolderOpen, MoreHorizontal, X, Bell, UserCircle } from 'lucide-react'
+import { Briefcase, Plus, LayoutDashboard, Settings, LogOut, Search, FolderOpen, MoreHorizontal, X, Bell, UserCircle } from 'lucide-react'
 import { supabase } from './lib/supabase'
 import { AuthScreen } from './components/AuthScreen'
 import { LandingPage } from './components/LandingPage'
@@ -28,7 +28,6 @@ import { useUserProfile } from './hooks/useUserProfile'
 import { DashboardTab } from './features/dashboard/DashboardTab'
 import { ApplicationsTab } from './features/applications/ApplicationsTab'
 import { AddJobTab } from './features/applications/AddJobTab'
-import { FollowUpsTab } from './features/followups/FollowUpsTab'
 import { SettingsTab } from './features/settings/SettingsTab'
 import { ProfileTab } from './features/profile/ProfileTab'
 import { JobSearchTab } from './features/jobsearch/JobSearchTab'
@@ -53,7 +52,6 @@ function MobileNav({ activeTab, onTabChange, t }: MobileNavProps) {
     { value: 'dashboard',    icon: <LayoutDashboard size={20} />, label: t('tabDashboard') },
     { value: 'applications', icon: <Briefcase size={20} />,       label: t('tabApplications') },
     { value: 'add',          icon: <Plus size={20} />,            label: t('tabAddJob') },
-    { value: 'followups',    icon: <Clock size={20} />,           label: t('tabFollowUps') },
     { value: 'profile',      icon: <UserCircle size={20} />,      label: t('tabProfile') },
     { value: 'settings',     icon: <Settings size={20} />,        label: t('tabSettings') },
   ]
@@ -277,7 +275,7 @@ function App() {
   }
 
   const handleNavigateToFollowUps = () => {
-    setActiveTab('followups')
+    setActiveTab('applications')
   }
 
   if (authLoading) {
@@ -315,7 +313,6 @@ function App() {
     { value: 'applications', icon: <Briefcase size={17} />,       label: t('tabApplications') },
     { value: 'add',          icon: <Plus size={17} />,            label: t('tabAddJob') },
     { value: 'jobsearch',    icon: <Search size={17} />,          label: t('tabJobSearch') },
-    { value: 'followups',    icon: <Clock size={17} />,           label: t('tabFollowUps') },
     { value: 'documents',    icon: <FolderOpen size={17} />,      label: t('tabDocuments') },
     { value: 'profile',      icon: <UserCircle size={17} />,      label: t('tabProfile') },
     { value: 'settings',     icon: <Settings size={17} />,        label: t('tabSettings') },
@@ -427,7 +424,7 @@ function App() {
                   </ul>
                   <div className="px-3 py-2 border-t border-border/50">
                     <button
-                      onClick={() => { setActiveTab('followups'); setNotifOpen(false) }}
+                      onClick={() => { setActiveTab('applications'); setNotifOpen(false) }}
                       className="w-full text-center text-xs font-medium text-primary hover:underline py-0.5"
                     >
                       View all →
@@ -476,7 +473,7 @@ function App() {
           </Button>
         </header>
 
-        <AlertBanner jobs={jobs} onViewFollowUps={() => setActiveTab('followups')} />
+        <AlertBanner jobs={jobs} onViewFollowUps={() => setActiveTab('applications')} />
 
         {/* Page content */}
         <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 pb-24 md:pb-10">
@@ -578,10 +575,6 @@ function App() {
                   onJobSaved={refreshJobs}
                   userProfile={profile}
                 />
-              </TabsContent>
-
-              <TabsContent value="followups" className="outline-none">
-                <FollowUpsTab jobs={jobs} onRefresh={refreshJobs} onEdit={setEditingJob} />
               </TabsContent>
 
               <TabsContent value="documents" className="outline-none">
