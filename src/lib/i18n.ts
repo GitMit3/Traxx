@@ -12,6 +12,7 @@ export const translations = {
 
     // Header
     signOut: 'Sign Out',
+    signOutAllDevices: 'Sign out from all devices',
 
     // Tabs
     tabDashboard: 'Dashboard',
@@ -430,6 +431,7 @@ export const translations = {
 
     // Header
     signOut: 'Logga ut',
+    signOutAllDevices: 'Logga ut från alla enheter',
 
     // Tabs
     tabDashboard: 'Översikt',

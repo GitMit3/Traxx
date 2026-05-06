@@ -40,6 +40,7 @@ export function SettingsTab({ user, jobTypes, jobs, onRefresh, onLogout, lang, o
 
   const [passwordData, setPasswordData] = useState({ current: '', new: '', confirm: '' })
   const [passwordLoading, setPasswordLoading] = useState(false)
+  const [globalSignOutLoading, setGlobalSignOutLoading] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
 
@@ -56,14 +57,33 @@ export function SettingsTab({ user, jobTypes, jobs, onRefresh, onLogout, lang, o
     }
     setPasswordLoading(true)
     try {
+      const { error: reAuthError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: passwordData.current,
+      })
+      if (reAuthError) throw new Error(t('currentPasswordIncorrect'))
+
       const { error } = await supabase.auth.updateUser({ password: passwordData.new })
       if (error) throw error
       toast.success(t('passwordChangedSuccess'))
-      setPasswordData({ current: '', new: '', confirm: '' })
+      await supabase.auth.signOut()
+      onLogout()
     } catch (err: any) {
       toast.error(err?.message || t('failedToChangePassword'))
     } finally {
       setPasswordLoading(false)
+    }
+  }
+
+  const handleSignOutAllDevices = async () => {
+    setGlobalSignOutLoading(true)
+    try {
+      await supabase.auth.signOut({ scope: 'global' })
+      onLogout()
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to sign out')
+    } finally {
+      setGlobalSignOutLoading(false)
     }
   }
 
@@ -305,6 +325,15 @@ export function SettingsTab({ user, jobTypes, jobs, onRefresh, onLogout, lang, o
             <Button variant="destructive" onClick={onLogout} className="gap-2 w-full">
               <LogOut size={16} />
               {t('signOut')}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={handleSignOutAllDevices}
+              disabled={globalSignOutLoading}
+              className="gap-2 w-full"
+            >
+              {globalSignOutLoading ? <Loader2 size={16} className="animate-spin" /> : <LogOut size={16} />}
+              {t('signOutAllDevices')}
             </Button>
             <Button
               variant="outline"

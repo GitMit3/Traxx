@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button, Input, Card, CardContent, CardHeader, CardTitle } from '@blinkdotnew/ui'
 import { Briefcase, Lock, AlertCircle, CheckCircle2, ArrowLeft } from 'lucide-react'
 import { supabase } from '../lib/supabase'
@@ -12,8 +12,18 @@ export function ResetPasswordPage({}: ResetPasswordPageProps) {
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
 
+  // Ensure the recovery session from the URL hash is fully initialized
+  // before the user can submit the new password.
+  useEffect(() => {
+    supabase.auth.getSession()
+  }, [])
+
   const goToLogin = () => {
-    // Navigate to root, stripping all query params so App shows the login screen
+    window.location.replace('/')
+  }
+
+  const handlePostReset = async () => {
+    await supabase.auth.signOut()
     window.location.replace('/')
   }
 
@@ -94,7 +104,7 @@ export function ResetPasswordPage({}: ResetPasswordPageProps) {
                     You can now sign in with your new password.
                   </p>
                 </div>
-                <Button className="w-full" onClick={goToLogin}>
+                <Button className="w-full" onClick={handlePostReset}>
                   Go to Sign In
                 </Button>
               </div>

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
-import { Job, JobTypeRow } from '../types/job'
+import { Job } from '../types/job'
 import { toast } from '@blinkdotnew/ui'
 
 function rowToJob(row: any): Job {
@@ -32,10 +32,13 @@ export function useAppData(user: any) {
   const loadData = useCallback(async (userId: string) => {
     setDataLoading(true)
     try {
-      const [{ data: fetchedJobs }, { data: fetchedTypes }] = await Promise.all([
+      const [{ data: fetchedJobs, error: jobsError }, { data: fetchedTypes, error: typesError }] = await Promise.all([
         supabase.from('jobs').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
         supabase.from('job_types').select('*').eq('user_id', userId).order('created_at', { ascending: true }),
       ])
+
+      if (jobsError) throw jobsError
+      if (typesError) throw typesError
 
       setJobs((fetchedJobs ?? []).map(rowToJob))
       setJobTypes((fetchedTypes ?? []).map((t: any) => t.name))
@@ -71,6 +74,8 @@ export function useAppData(user: any) {
           }
         } catch {}
       }
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to load data')
     } finally {
       setDataLoading(false)
     }
@@ -84,8 +89,9 @@ export function useAppData(user: any) {
 
   const refreshJobs = async () => {
     if (!user?.id) return
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('jobs').select('*').eq('user_id', user.id).order('created_at', { ascending: false })
+    if (error) { toast.error(error.message || 'Failed to refresh jobs'); return }
     setJobs((data ?? []).map(rowToJob))
   }
 

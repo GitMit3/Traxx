@@ -231,39 +231,19 @@ export function ProfileTab({ user, profile, onProfileSaved }: ProfileTabProps) {
       const workExperience = JSON.stringify(expEntries)
       const { skills, preferredTitles, preferredLocations, otherPreferences } = localProfile
 
-      const { data: existing } = await supabase
-        .from('user_profiles')
-        .select('id')
-        .eq('user_id', user.id)
-        .limit(1)
-
-      if (existing && existing.length > 0) {
-        await supabase.from('user_profiles').update({
-          education,
-          work_experience: workExperience,
-          skills,
-          preferred_titles: preferredTitles,
-          preferred_locations: preferredLocations,
-          other_preferences: otherPreferences,
-          first_name: firstName,
-          last_name: lastName,
-          bio,
-        }).eq('id', existing[0].id)
-      } else {
-        await supabase.from('user_profiles').insert({
-          user_id: user.id,
-          education,
-          work_experience: workExperience,
-          skills,
-          preferred_titles: preferredTitles,
-          preferred_locations: preferredLocations,
-          other_preferences: otherPreferences,
-          first_name: firstName,
-          last_name: lastName,
-          bio,
-          theme: 'default',
-        })
-      }
+      const { error: profileError } = await supabase.from('user_profiles').upsert({
+        user_id: user.id,
+        education,
+        work_experience: workExperience,
+        skills,
+        preferred_titles: preferredTitles,
+        preferred_locations: preferredLocations,
+        other_preferences: otherPreferences,
+        first_name: firstName,
+        last_name: lastName,
+        bio,
+      }, { onConflict: 'user_id' })
+      if (profileError) throw profileError
 
       toast.success(t('profileSaved'))
       onProfileSaved?.()
