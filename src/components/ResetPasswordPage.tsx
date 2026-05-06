@@ -1,13 +1,11 @@
 import { useState } from 'react'
 import { Button, Input, Card, CardContent, CardHeader, CardTitle } from '@blinkdotnew/ui'
 import { Briefcase, Lock, AlertCircle, CheckCircle2, ArrowLeft } from 'lucide-react'
-import { blink } from '../blink/client'
+import { supabase } from '../lib/supabase'
 
-interface ResetPasswordPageProps {
-  token: string
-}
+interface ResetPasswordPageProps {}
 
-export function ResetPasswordPage({ token }: ResetPasswordPageProps) {
+export function ResetPasswordPage({}: ResetPasswordPageProps) {
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState('')
@@ -38,17 +36,12 @@ export function ResetPasswordPage({ token }: ResetPasswordPageProps) {
 
     setLoading(true)
     try {
-      await blink.auth.confirmPasswordReset(token, password)
+      const { error } = await supabase.auth.updateUser({ password })
+      if (error) throw error
       setSuccess(true)
     } catch (err: any) {
       const msg = err?.message || ''
-      const code = err?.code || ''
-      if (
-        code === 'TOKEN_EXPIRED' ||
-        code === 'INVALID_TOKEN' ||
-        msg.toLowerCase().includes('expired') ||
-        msg.toLowerCase().includes('invalid')
-      ) {
+      if (msg.toLowerCase().includes('expired') || msg.toLowerCase().includes('invalid')) {
         setError('This reset link has expired or is invalid. Please request a new one.')
       } else {
         setError(msg || 'Something went wrong. Please try again.')

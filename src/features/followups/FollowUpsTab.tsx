@@ -2,7 +2,7 @@ import { Card, CardHeader, CardTitle, CardContent, Button, Badge, EmptyState } f
 import { CheckCircle, XCircle, TrendingUp, Edit2, Calendar, Clock, AlertCircle, MessageCircle } from 'lucide-react'
 import { Job, JobStatus } from '../../types/job'
 import { getFollowUpStatus, formatDate } from '../../lib/utils/date'
-import { blink } from '../../blink/client'
+import { supabase } from '../../lib/supabase'
 import { toast } from '@blinkdotnew/ui'
 import { useLanguage } from '../../lib/LanguageContext'
 
@@ -22,7 +22,21 @@ export function FollowUpsTab({ jobs, onRefresh, onEdit }: FollowUpsTabProps) {
 
   const handleQuickAction = async (jobId: string, updates: Partial<Job>, message: string) => {
     try {
-      await blink.db.jobs.update(jobId, updates)
+      const keyMap: Record<string, string> = {
+        followUpDate: 'follow_up_date',
+        nextStep: 'next_step',
+        coverLetterStatus: 'cover_letter_status',
+        interviewNotes: 'interview_notes',
+        dateApplied: 'date_applied',
+        matchScore: 'match_score',
+        jobType: 'job_type',
+        jobUrl: 'job_url',
+      }
+      const row = Object.fromEntries(
+        Object.entries(updates).map(([k, v]) => [keyMap[k] ?? k, v])
+      )
+      const { error } = await supabase.from('jobs').update(row).eq('id', jobId)
+      if (error) throw error
       toast.success(message)
       onRefresh()
     } catch {

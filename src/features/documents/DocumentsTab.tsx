@@ -6,7 +6,7 @@ import {
   Textarea, EmptyState,
 } from '@blinkdotnew/ui'
 import { FileText, Upload, Trash2, Edit2, Plus, Download, FileCheck, Loader2 } from 'lucide-react'
-import { blink } from '../../blink/client'
+import { supabase } from '../../lib/supabase'
 import { useLanguage } from '../../lib/LanguageContext'
 
 interface DocumentsTabProps {
@@ -69,11 +69,22 @@ export function DocumentsTab({ user }: DocumentsTabProps) {
   // ── Load data ─────────────────────────────────────────────────────────────
   const loadCvFiles = async () => {
     try {
-      const rows = await blink.db.cvFiles.list({
-        where: { userId: user.id },
-        orderBy: { createdAt: 'desc' },
-      }) as unknown as CvFile[]
-      setCvFiles(rows)
+      const { data, error } = await supabase
+        .from('cv_files')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      setCvFiles((data ?? []).map((r: any) => ({
+        id: r.id,
+        userId: r.user_id,
+        name: r.name,
+        fileUrl: r.file_url,
+        fileSize: r.file_size,
+        fileType: r.file_type,
+        createdAt: new Date(r.created_at).getTime(),
+        updatedAt: new Date(r.updated_at).getTime(),
+      })))
     } catch {
       toast.error(t('cvFilesLoadFailed'))
     } finally {
@@ -83,11 +94,20 @@ export function DocumentsTab({ user }: DocumentsTabProps) {
 
   const loadCoverLetters = async () => {
     try {
-      const rows = await blink.db.coverLetters.list({
-        where: { userId: user.id },
-        orderBy: { createdAt: 'desc' },
-      }) as unknown as CoverLetter[]
-      setCoverLetters(rows)
+      const { data, error } = await supabase
+        .from('cover_letters')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+      if (error) throw error
+      setCoverLetters((data ?? []).map((r: any) => ({
+        id: r.id,
+        userId: r.user_id,
+        title: r.title,
+        content: r.content,
+        createdAt: new Date(r.created_at).getTime(),
+        updatedAt: new Date(r.updated_at).getTime(),
+      })))
     } catch {
       toast.error(t('coverLettersLoadFailed'))
     } finally {
@@ -110,19 +130,19 @@ export function DocumentsTab({ user }: DocumentsTabProps) {
     setUploading(true)
     try {
       const ext = file.name.split('.').pop() ?? 'pdf'
-      const path = `cv-files/${user.id}/${Date.now()}.${ext}`
-      const { publicUrl } = await blink.storage.upload(file, path)
+      const path = `${user.id}/${Date.now()}.${ext}`
+      const { error: uploadError } = await supabase.storage.from('cv-files').upload(path, file)
+      if (uploadError) throw uploadError
+      const { data: { publicUrl } } = supabase.storage.from('cv-files').getPublicUrl(path)
       const nameWithoutExt = file.name.replace(/\.[^/.]+$/, '')
-      await blink.db.cvFiles.create({
-        id: crypto.randomUUID(),
-        userId: user.id,
+      const { error: dbError } = await supabase.from('cv_files').insert({
+        user_id: user.id,
         name: nameWithoutExt,
-        fileUrl: publicUrl,
-        fileSize: file.size,
-        fileType: file.type,
-        createdAt: Date.now(),
-        updatedAt: Date.now(),
+        file_url: publicUrl,
+        file_size: file.size,
+        file_type: file.type,
       })
+      if (dbError) throw dbError
       toast.success(t('cvUploaded'))
       await loadCvFiles()
     } catch (err: any) {
@@ -141,7 +161,8 @@ export function DocumentsTab({ user }: DocumentsTabProps) {
   const saveEditCv = async (id: string) => {
     if (!editingCvName.trim()) return
     try {
-      await blink.db.cvFiles.update(id, { name: editingCvName.trim(), updatedAt: Date.now() })
+      const { error } = await supabase.from('cv_files').update({ name: editingCvName.trim() }).eq('id', id)
+      if (error) throw error
       setCvFiles(prev => prev.map(c => c.id === id ? { ...c, name: editingCvName.trim() } : c))
       toast.success(t('cvNameUpdated'))
     } catch {
@@ -155,7 +176,8 @@ export function DocumentsTab({ user }: DocumentsTabProps) {
   // ── CV File: delete ───────────────────────────────────────────────────────
   const deleteCv = async (id: string) => {
     try {
-      await blink.db.cvFiles.delete(id)
+      const { error } = await supabase.from('cv_files').delete().eq('id', id)
+      if (error) throw error
       setCvFiles(prev => prev.filter(c => c.id !== id))
       toast.success(t('cvDeleted'))
     } catch {
@@ -194,11 +216,11 @@ export function DocumentsTab({ user }: DocumentsTabProps) {
     setClSaving(true)
     try {
       if (clEditTarget) {
-        await blink.db.coverLetters.update(clEditTarget.id, {
-          title: clTitle.trim(),
-          content: clContent,
-          updatedAt: Date.now(),
-        })
+        const { error } = await supabase
+          .from('cover_letters')
+          .update({ title: clTitle.trim(), content: clContent })
+          .eq('id', clEditTarget.id)
+        if (error) throw error
         setCoverLetters(prev =>
           prev.map(cl =>
             cl.id === clEditTarget.id
@@ -208,14 +230,20 @@ export function DocumentsTab({ user }: DocumentsTabProps) {
         )
         toast.success(t('coverLetterUpdated'))
       } else {
-        const created = await blink.db.coverLetters.create({
-          id: crypto.randomUUID(),
-          userId: user.id,
-          title: clTitle.trim(),
-          content: clContent,
-          createdAt: Date.now(),
-          updatedAt: Date.now(),
-        }) as unknown as CoverLetter
+        const { data, error } = await supabase
+          .from('cover_letters')
+          .insert({ user_id: user.id, title: clTitle.trim(), content: clContent })
+          .select()
+          .single()
+        if (error) throw error
+        const created: CoverLetter = {
+          id: data.id,
+          userId: data.user_id,
+          title: data.title,
+          content: data.content,
+          createdAt: new Date(data.created_at).getTime(),
+          updatedAt: new Date(data.updated_at).getTime(),
+        }
         setCoverLetters(prev => [created, ...prev])
         toast.success(t('coverLetterSaved'))
       }
@@ -230,7 +258,8 @@ export function DocumentsTab({ user }: DocumentsTabProps) {
   // ── Cover Letters: delete ─────────────────────────────────────────────────
   const deleteCl = async (id: string) => {
     try {
-      await blink.db.coverLetters.delete(id)
+      const { error } = await supabase.from('cover_letters').delete().eq('id', id)
+      if (error) throw error
       setCoverLetters(prev => prev.filter(cl => cl.id !== id))
       toast.success(t('coverLetterDeleted'))
     } catch {

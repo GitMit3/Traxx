@@ -4,7 +4,7 @@ import {
   Badge, Dialog, DialogContent, DialogHeader, DialogTitle, EmptyState,
 } from '@blinkdotnew/ui'
 import { Search, ExternalLink, BookmarkPlus, Check, MapPin, Calendar, Building2, ChevronRight, X } from 'lucide-react'
-import { blink } from '../../blink/client'
+import { supabase } from '../../lib/supabase'
 import { useLanguage } from '../../lib/LanguageContext'
 import { calculateMatchScore, PlatsbankenJob, UserProfile } from '../../lib/matchScore'
 import { toast } from '@blinkdotnew/ui'
@@ -205,39 +205,23 @@ export function JobSearchTab({ user, onJobSaved, userProfile }: JobSearchTabProp
     try {
       const match = userProfile ? calculateMatchScore(job, userProfile) : { score: 0, reasons: [] }
       const today = new Date().toISOString().split('T')[0]
-      await blink.db.jobs.create({
-        id:                 crypto.randomUUID(),
-        userId:             user.id,
-        company:            job.employer,
-        role:               job.title,
-        status:             'Saved',
-        jobType:            job.occupation || '',
-        dateApplied:        today,
-        nextStep:           '',
-        matchScore:         match.score,
-        priority:           'Medium',
-        coverLetterStatus:  'Not started',
-        followUpDate:       '',
-        interviewNotes:     '',
-        notes:              '',
-        jobUrl:             job.sourceUrl || '',
-        createdAt:          Date.now(),
+      const { error } = await supabase.from('jobs').insert({
+        user_id:             user.id,
+        company:             job.employer,
+        role:                job.title,
+        status:              'Saved',
+        job_type:            job.occupation || '',
+        date_applied:        today,
+        next_step:           '',
+        match_score:         match.score,
+        priority:            'Medium',
+        cover_letter_status: 'Not started',
+        follow_up_date:      '',
+        interview_notes:     '',
+        notes:               '',
+        job_url:             job.sourceUrl || '',
       })
-      await blink.db.platsbankenJobs.create({
-        id:                 crypto.randomUUID(),
-        userId:             user.id,
-        externalId:         job.id,
-        title:              job.title,
-        employer:           job.employer,
-        location:           job.location,
-        publishedDate:      job.publishedDate,
-        description:        job.description,
-        sourceUrl:          job.sourceUrl,
-        jobType:            job.occupation || '',
-        rawJson:            '',
-        savedToApplications: 1,
-        createdAt:          Date.now(),
-      })
+      if (error) throw error
       setSavedIds(prev => new Set(prev).add(job.id))
       onJobSaved()
       toast.success(t('jobSavedSuccess'))

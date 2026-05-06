@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button, Input, Card, CardContent, CardHeader, CardTitle } from '@blinkdotnew/ui'
 import { Mail, Lock, AlertCircle, ArrowLeft, CheckCircle2 } from 'lucide-react'
-import { blink } from '../blink/client'
+import { supabase } from '../lib/supabase'
 import { useLanguage } from '../lib/LanguageContext'
 
 interface AuthScreenProps {
@@ -25,24 +25,28 @@ export function AuthScreen({ initialMode = 'login', onBack }: AuthScreenProps) {
     setLoading(true)
     try {
       if (mode === 'signup') {
-        await blink.auth.signUp({ email, password })
+        const { error } = await supabase.auth.signUp({ email, password })
+        if (error) throw error
       } else if (mode === 'login') {
-        await blink.auth.signInWithEmail(email, password)
+        const { error } = await supabase.auth.signInWithPassword({ email, password })
+        if (error) throw error
       } else if (mode === 'forgot-password') {
-        const redirectUrl = `${window.location.origin}/reset-password`
-        await blink.auth.sendPasswordResetEmail(email, { redirectUrl })
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        })
+        if (error) throw error
         setMessage(t('resetLinkSent'))
       }
     } catch (err: any) {
-      const code = err?.code || ''
-      if (code === 'INVALID_CREDENTIALS') {
+      const msg: string = err?.message || ''
+      if (msg.toLowerCase().includes('invalid login credentials') || msg.toLowerCase().includes('invalid credentials')) {
         setError(t('invalidCredentials'))
-      } else if (code === 'EMAIL_ALREADY_EXISTS') {
+      } else if (msg.toLowerCase().includes('already registered') || msg.toLowerCase().includes('already exists')) {
         setError(t('emailAlreadyExists'))
-      } else if (code === 'WEAK_PASSWORD') {
+      } else if (msg.toLowerCase().includes('password') && msg.toLowerCase().includes('characters')) {
         setError(t('weakPassword'))
       } else {
-        setError(err?.message || t('somethingWentWrong'))
+        setError(msg || t('somethingWentWrong'))
       }
     } finally {
       setLoading(false)

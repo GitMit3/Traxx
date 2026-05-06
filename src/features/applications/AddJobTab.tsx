@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardHeader, CardTitle, CardContent, Button, Input, Select, SelectTrigger, SelectContent, SelectItem, SelectValue, toast, Textarea } from '@blinkdotnew/ui'
 import { Plus, ChevronDown, ChevronUp, FileText } from 'lucide-react'
 import { JobStatus, JobPriority } from '../../types/job'
-import { blink } from '../../blink/client'
+import { supabase } from '../../lib/supabase'
 import { useLanguage } from '../../lib/LanguageContext'
 import { JOB_TITLE_CATEGORIES } from '../../lib/constants'
 
@@ -47,12 +47,12 @@ export function AddJobTab({ user, jobTypes, onRefresh }: AddJobTabProps) {
   useEffect(() => {
     const loadDocs = async () => {
       try {
-        const [cvs, cls] = await Promise.all([
-          blink.db.cvFiles.list({ where: { userId: user.id }, orderBy: { createdAt: 'desc' } }),
-          blink.db.coverLetters.list({ where: { userId: user.id }, orderBy: { createdAt: 'desc' } }),
+        const [{ data: cvs }, { data: cls }] = await Promise.all([
+          supabase.from('cv_files').select('id, name').eq('user_id', user.id).order('created_at', { ascending: false }),
+          supabase.from('cover_letters').select('id, title').eq('user_id', user.id).order('created_at', { ascending: false }),
         ])
-        setCvFiles(cvs as unknown as CvFile[])
-        setCoverLetters(cls as unknown as CoverLetter[])
+        setCvFiles((cvs ?? []) as CvFile[])
+        setCoverLetters((cls ?? []) as CoverLetter[])
       } catch { /* silent */ }
     }
     loadDocs()
@@ -69,19 +69,27 @@ export function AddJobTab({ user, jobTypes, onRefresh }: AddJobTabProps) {
       const selectedCv = cvFiles.find(c => c.id === selectedCvId)
       const selectedCl = coverLetters.find(c => c.id === selectedClId)
 
-      const newJob = {
-        id: crypto.randomUUID(),
-        userId: user.id,
-        ...formData,
+      const { error } = await supabase.from('jobs').insert({
+        user_id: user.id,
+        company: formData.company,
+        role: formData.role,
+        status: formData.status,
+        job_type: formData.jobType,
+        date_applied: formData.dateApplied,
+        next_step: formData.nextStep,
+        match_score: formData.matchScore,
+        priority: formData.priority,
+        cover_letter_status: formData.coverLetterStatus,
+        follow_up_date: formData.followUpDate,
+        interview_notes: formData.interviewNotes,
         notes: [
           formData.notes,
           selectedCv ? `CV: ${selectedCv.name}` : '',
           selectedCl ? `Cover letter: ${selectedCl.title}` : '',
         ].filter(Boolean).join('\n'),
-        createdAt: Date.now(),
-        
-      }
-      await blink.db.jobs.create(newJob)
+        job_url: formData.jobUrl,
+      })
+      if (error) throw error
       toast.success(t('applicationAdded'))
       setFormData({ ...emptyForm })
       setSelectedCvId('')

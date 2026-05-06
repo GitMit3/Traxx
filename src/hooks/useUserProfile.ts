@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { blink } from '../blink/client'
+import { supabase } from '../lib/supabase'
 import { UserProfile } from '../lib/matchScore'
 
 export function useUserProfile(userId: string | undefined) {
@@ -9,18 +9,23 @@ export function useUserProfile(userId: string | undefined) {
   const loadProfile = useCallback(async (uid: string) => {
     setProfileLoading(true)
     try {
-      const rows = await blink.db.userProfiles.list({ where: { userId: uid } })
-      if (rows.length > 0) {
-        const row = rows[0] as any
+      const { data: rows } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', uid)
+        .limit(1)
+
+      if (rows && rows.length > 0) {
+        const row = rows[0]
         setProfile({
           skills: row.skills || '',
           education: row.education || '',
-          workExperience: row.workExperience || '',
-          preferredTitles: row.preferredTitles || '',
-          preferredLocations: row.preferredLocations || '',
-          otherPreferences: row.otherPreferences || '',
-          first_name: row.first_name || row.firstName || '',
-          last_name: row.last_name || row.lastName || '',
+          workExperience: row.work_experience || '',
+          preferredTitles: row.preferred_titles || '',
+          preferredLocations: row.preferred_locations || '',
+          otherPreferences: row.other_preferences || '',
+          first_name: row.first_name || '',
+          last_name: row.last_name || '',
           bio: row.bio || '',
         } as any)
       }

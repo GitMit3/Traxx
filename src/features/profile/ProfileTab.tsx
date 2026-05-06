@@ -4,7 +4,7 @@ import {
   PageDescription, toast,
 } from '@blinkdotnew/ui'
 import { UserCircle, Camera, GraduationCap, Briefcase, Plus, Edit2, Trash2 } from 'lucide-react'
-import { blink } from '../../blink/client'
+import { supabase } from '../../lib/supabase'
 import { useLanguage } from '../../lib/LanguageContext'
 import { UserProfile } from '../../lib/matchScore'
 
@@ -152,7 +152,7 @@ export function ProfileTab({ user, profile, onProfileSaved }: ProfileTabProps) {
   // Hydrate from user and profile
   useEffect(() => {
     if (user) {
-      setAvatarUrl(user.avatarUrl || '')
+      setAvatarUrl(user.user_metadata?.avatar_url || '')
     }
   }, [user])
 
@@ -170,11 +170,8 @@ export function ProfileTab({ user, profile, onProfileSaved }: ProfileTabProps) {
 
   // Load bio from user metadata if present
   useEffect(() => {
-    if (user?.metadata) {
-      try {
-        const meta = typeof user.metadata === 'string' ? JSON.parse(user.metadata) : user.metadata
-        if (meta?.bio) setBio(meta.bio)
-      } catch {}
+    if (user?.user_metadata?.bio) {
+      setBio(user.user_metadata.bio)
     }
   }, [user])
 
@@ -186,10 +183,14 @@ export function ProfileTab({ user, profile, onProfileSaved }: ProfileTabProps) {
     setUploadingAvatar(true)
     try {
       const ext = file.name.split('.').pop() || 'jpg'
-      const path = `avatars/${user.id}/avatar.${ext}`
-      const { publicUrl } = await blink.storage.upload(path, file, { upsert: true })
+      const path = `${user.id}/avatar.${ext}`
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(path, file, { upsert: true })
+      if (uploadError) throw uploadError
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
       setAvatarUrl(publicUrl)
-      await blink.auth.updateMe({ avatarUrl: publicUrl })
+      await supabase.auth.updateUser({ data: { avatar_url: publicUrl } })
       toast.success(t('uploadPhoto'))
     } catch {
       toast.error('Failed to upload photo')
@@ -217,53 +218,50 @@ export function ProfileTab({ user, profile, onProfileSaved }: ProfileTabProps) {
     // 1. Update display name + bio via auth — failure here is non-blocking
     try {
       const displayName = [firstName, lastName].filter(Boolean).join(' ')
-      await blink.auth.updateMe({
-        displayName: displayName || undefined,
-        metadata: JSON.stringify({ bio }),
+      await supabase.auth.updateUser({
+        data: { display_name: displayName || undefined, bio },
       })
     } catch (authErr) {
-      // Auth update failed (e.g. metadata not supported) — log and continue
-      console.warn('ProfileTab: auth.updateMe failed (non-blocking):', authErr)
+      console.warn('ProfileTab: auth.updateUser failed (non-blocking):', authErr)
     }
 
-    // 2. Save profile fields to DB — only columns that exist in user_profiles
+    // 2. Save profile fields to DB
     try {
       const education = JSON.stringify(eduEntries)
       const workExperience = JSON.stringify(expEntries)
       const { skills, preferredTitles, preferredLocations, otherPreferences } = localProfile
 
-      const existing = await blink.db.userProfiles.list({ where: { userId: user.id } })
-      const now = Date.now()
+      const { data: existing } = await supabase
+        .from('user_profiles')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1)
 
-      if (existing.length > 0) {
-         await blink.db.userProfiles.update(existing[0].id, {
+      if (existing && existing.length > 0) {
+        await supabase.from('user_profiles').update({
           education,
-          workExperience,
+          work_experience: workExperience,
           skills,
-          preferredTitles,
-          preferredLocations,
-          otherPreferences,
+          preferred_titles: preferredTitles,
+          preferred_locations: preferredLocations,
+          other_preferences: otherPreferences,
           first_name: firstName,
           last_name: lastName,
-          bio: bio,
-          updatedAt: now,
-        })
+          bio,
+        }).eq('id', existing[0].id)
       } else {
-        await blink.db.userProfiles.create({
-          id: crypto.randomUUID(),
-          userId: user.id,
+        await supabase.from('user_profiles').insert({
+          user_id: user.id,
           education,
-          workExperience,
+          work_experience: workExperience,
           skills,
-          preferredTitles,
-          preferredLocations,
-          otherPreferences,
+          preferred_titles: preferredTitles,
+          preferred_locations: preferredLocations,
+          other_preferences: otherPreferences,
           first_name: firstName,
           last_name: lastName,
           bio,
           theme: 'default',
-          createdAt: now,
-          updatedAt: now,
         })
       }
 

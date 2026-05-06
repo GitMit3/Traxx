@@ -6,7 +6,7 @@ import { Job, JobStatus, JobPriority } from '../../types/job'
 import { getFollowUpStatus } from '../../lib/utils/date'
 import { useLanguage } from '../../lib/LanguageContext'
 import { calculateMatchScore, PlatsbankenJob, UserProfile } from '../../lib/matchScore'
-import { blink } from '../../blink/client'
+import { supabase } from '../../lib/supabase'
 
 interface DashboardTabProps {
   jobs: Job[]
@@ -127,38 +127,22 @@ export function DashboardTab({ jobs, jobTypes, onNavigateToApplications, onNavig
     setSavingId(job.id)
     try {
       const today = new Date().toISOString().split('T')[0]
-      await blink.db.jobs.create({
-        id: crypto.randomUUID(),
-        userId: user.id,
+      const { error } = await supabase.from('jobs').insert({
+        user_id: user.id,
         company: job.employer || job.title,
         role: job.title,
         status: 'Applied',
-        jobType: job.occupation || '',
-        dateApplied: today,
-        nextStep: '',
-        matchScore: job.score,
+        job_type: job.occupation || '',
+        date_applied: today,
+        next_step: '',
+        match_score: job.score,
         priority: 'Medium',
-        coverLetterStatus: 'Not started',
-        followUpDate: '',
-        interviewNotes: '',
+        cover_letter_status: 'Not started',
+        follow_up_date: '',
+        interview_notes: '',
         notes: job.sourceUrl ? `Source: ${job.sourceUrl}` : '',
-        createdAt: Date.now(),
       })
-      await blink.db.platsbankenJobs.create({
-        id: crypto.randomUUID(),
-        userId: user.id,
-        externalId: job.id,
-        title: job.title,
-        employer: job.employer,
-        location: job.location,
-        publishedDate: job.publishedDate,
-        description: job.description,
-        sourceUrl: job.sourceUrl,
-        jobType: job.occupation || '',
-        rawJson: '',
-        savedToApplications: 1,
-        createdAt: Date.now(),
-      })
+      if (error) throw error
       setSavedIds(prev => new Set(prev).add(job.id))
       onJobSaved?.()
       toast.success(t('jobSavedSuccess'))

@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { Card, CardHeader, CardTitle, CardContent, Button, Input, PageDescription, toast, Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@blinkdotnew/ui'
-import { Download, Upload, LogOut, UserCircle, KeyRound, Globe, Palette } from 'lucide-react'
-import { blink } from '../../blink/client'
+import { Card, CardHeader, CardTitle, CardContent, Button, Input, PageDescription, toast, Select, SelectTrigger, SelectContent, SelectItem, SelectValue, Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@blinkdotnew/ui'
+import { Download, Upload, LogOut, UserCircle, KeyRound, Globe, Palette, Trash2, AlertTriangle, Loader2 } from 'lucide-react'
+import { supabase } from '../../lib/supabase'
 import { Job } from '../../types/job'
 import { useLanguage } from '../../lib/LanguageContext'
 import { Language } from '../../lib/i18n'
@@ -40,6 +40,8 @@ export function SettingsTab({ user, jobTypes, jobs, onRefresh, onLogout, lang, o
 
   const [passwordData, setPasswordData] = useState({ current: '', new: '', confirm: '' })
   const [passwordLoading, setPasswordLoading] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -54,13 +56,46 @@ export function SettingsTab({ user, jobTypes, jobs, onRefresh, onLogout, lang, o
     }
     setPasswordLoading(true)
     try {
-      await blink.auth.changePassword(passwordData.current, passwordData.new)
+      const { error } = await supabase.auth.updateUser({ password: passwordData.new })
+      if (error) throw error
       toast.success(t('passwordChangedSuccess'))
       setPasswordData({ current: '', new: '', confirm: '' })
     } catch (err: any) {
       toast.error(err?.message || t('failedToChangePassword'))
     } finally {
       setPasswordLoading(false)
+    }
+  }
+
+  const handleDeleteAccount = async () => {
+    setDeleteLoading(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error('Not authenticated')
+
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-account`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body?.error ?? `Server error ${res.status}`)
+      }
+
+      await supabase.auth.signOut()
+      setShowDeleteConfirm(false)
+      onLogout()
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to delete account')
+    } finally {
+      setDeleteLoading(false)
     }
   }
 
@@ -87,10 +122,29 @@ export function SettingsTab({ user, jobTypes, jobs, onRefresh, onLogout, lang, o
         toast.loading(t('importingData'))
         if (data.jobTypes && Array.isArray(data.jobTypes)) {
           const newTypes = data.jobTypes.filter((tp: string) => !jobTypes.includes(tp))
-          await blink.db.jobTypes.createMany(newTypes.map((tp: string) => ({ id: crypto.randomUUID(), userId: user.id, name: tp, createdAt: Date.now() })))
+          if (newTypes.length > 0) {
+            await supabase.from('job_types').insert(
+              newTypes.map((tp: string) => ({ user_id: user.id, name: tp }))
+            )
+          }
         }
-        const toInsert = data.jobs.map((j: any) => ({ ...j, id: crypto.randomUUID(), userId: user.id, createdAt: j.createdAt || Date.now() }))
-        await blink.db.jobs.createMany(toInsert)
+        const toInsert = data.jobs.map((j: any) => ({
+          user_id: user.id,
+          company: j.company || '',
+          role: j.role || '',
+          status: j.status || 'Applied',
+          job_type: j.jobType || '',
+          date_applied: j.dateApplied || new Date().toISOString().split('T')[0],
+          next_step: j.nextStep || '',
+          match_score: j.matchScore || 0,
+          priority: j.priority || 'Medium',
+          cover_letter_status: j.coverLetterStatus || 'Not started',
+          follow_up_date: j.followUpDate || '',
+          interview_notes: j.interviewNotes || '',
+          notes: j.notes || '',
+          job_url: j.jobUrl || '',
+        }))
+        await supabase.from('jobs').insert(toInsert)
         onRefresh()
         toast.dismiss()
         toast.success(t('importedSuccessfully', { count: toInsert.length }))
@@ -247,14 +301,74 @@ export function SettingsTab({ user, jobTypes, jobs, onRefresh, onLogout, lang, o
             </CardTitle>
             <PageDescription>{t('loggedInAs')}: {user.email}</PageDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
             <Button variant="destructive" onClick={onLogout} className="gap-2 w-full">
               <LogOut size={16} />
               {t('signOut')}
             </Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteConfirm(true)}
+              className="gap-2 w-full border-destructive/40 text-destructive hover:bg-destructive/5 hover:border-destructive"
+            >
+              <Trash2 size={16} />
+              Delete Account
+            </Button>
           </CardContent>
         </Card>
       </div>
+
+      {/* Delete Account Confirmation Dialog */}
+      <Dialog open={showDeleteConfirm} onOpenChange={open => { if (!deleteLoading) setShowDeleteConfirm(open) }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <AlertTriangle size={20} />
+              Delete Account
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <p className="text-sm text-foreground font-medium">
+              This will permanently delete your account and all associated data:
+            </p>
+            <ul className="text-sm text-muted-foreground space-y-1 list-none">
+              {['All job applications', 'Job types & categories', 'Profile information', 'CV files & cover letters', 'Uploaded documents'].map(item => (
+                <li key={item} className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-destructive/60 shrink-0" />
+                  {item}
+                </li>
+              ))}
+            </ul>
+            <div className="rounded-lg bg-destructive/8 border border-destructive/20 px-3 py-2.5">
+              <p className="text-xs font-semibold text-destructive">
+                This action cannot be undone. Your email can be used to create a new account.
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteConfirm(false)}
+              disabled={deleteLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteAccount}
+              disabled={deleteLoading}
+              className="gap-2 min-w-[140px]"
+            >
+              {deleteLoading
+                ? <><Loader2 size={14} className="animate-spin" /> Deleting…</>
+                : <><Trash2 size={14} /> Delete Account</>
+              }
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
     </div>
   )

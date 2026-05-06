@@ -18,7 +18,7 @@ import {
   toast
 } from '@blinkdotnew/ui'
 import { Briefcase, Plus, LayoutDashboard, Settings, LogOut, Clock, Search, FolderOpen, MoreHorizontal, X, Bell, UserCircle } from 'lucide-react'
-import { blink } from './blink/client'
+import { supabase } from './lib/supabase'
 import { AuthScreen } from './components/AuthScreen'
 import { LandingPage } from './components/LandingPage'
 import { ResetPasswordPage } from './components/ResetPasswordPage'
@@ -180,13 +180,11 @@ function App() {
   const [notifOpen, setNotifOpen] = useState(false)
   const { t, lang, setLang } = useLanguage()
 
-  const resetToken = useMemo(() => {
-    const params = new URLSearchParams(window.location.search)
-    const token = params.get('token')
-    const type = params.get('type')
-    const isResetPath = window.location.pathname === '/reset-password'
-    if (token && (isResetPath || type === 'password_reset')) return token
-    return null
+  const isPasswordReset = useMemo(() => {
+    return (
+      window.location.pathname === '/reset-password' ||
+      window.location.hash.includes('type=recovery')
+    )
   }, [])
 
   useEffect(() => {
@@ -202,40 +200,51 @@ function App() {
   }, [notifOpen])
 
   useEffect(() => {
-    if (resetToken) return
-    const unsubscribe = blink.auth.onAuthStateChanged((state) => {
-      setUser(state.user)
-      if (!state.isLoading) setAuthLoading(false)
-    })
-    return unsubscribe
-  }, [resetToken])
+    if (isPasswordReset) return
 
-  const { jobs, setJobs, jobTypes, dataLoading, refreshJobs, loadData } = useAppData(resetToken ? null : user)
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null)
+      setAuthLoading(false)
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+      setAuthLoading(false)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [isPasswordReset])
+
+  const { jobs, setJobs, jobTypes, dataLoading, refreshJobs, loadData } = useAppData(isPasswordReset ? null : user)
   const { profile, loadProfile } = useUserProfile(user?.id)
 
-  if (resetToken) {
-    return <ResetPasswordPage token={resetToken} />
+  if (isPasswordReset) {
+    return <ResetPasswordPage />
   }
 
   const handleUpdateJob = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!editingJob) return
     try {
-      await blink.db.jobs.update(editingJob.id, {
-        company: editingJob.company,
-        role: editingJob.role,
-        status: editingJob.status,
-        jobType: editingJob.jobType,
-        dateApplied: editingJob.dateApplied,
-        nextStep: editingJob.nextStep,
-        matchScore: editingJob.matchScore,
-        priority: editingJob.priority || 'Medium',
-        coverLetterStatus: editingJob.coverLetterStatus,
-        followUpDate: editingJob.followUpDate,
-        interviewNotes: editingJob.interviewNotes,
-        notes: editingJob.notes,
-        jobUrl: editingJob.jobUrl || '',
-      })
+      const { error } = await supabase
+        .from('jobs')
+        .update({
+          company: editingJob.company,
+          role: editingJob.role,
+          status: editingJob.status,
+          job_type: editingJob.jobType,
+          date_applied: editingJob.dateApplied,
+          next_step: editingJob.nextStep,
+          match_score: editingJob.matchScore,
+          priority: editingJob.priority || 'Medium',
+          cover_letter_status: editingJob.coverLetterStatus,
+          follow_up_date: editingJob.followUpDate,
+          interview_notes: editingJob.interviewNotes,
+          notes: editingJob.notes,
+          job_url: editingJob.jobUrl || '',
+        })
+        .eq('id', editingJob.id)
+      if (error) throw error
       setJobs(prev => prev.map(j => j.id === editingJob.id ? editingJob : j))
       setEditingJob(null)
       setActiveTab('applications')
@@ -247,7 +256,8 @@ function App() {
 
   const handleDeleteJob = async (id: string) => {
     try {
-      await blink.db.jobs.delete(id)
+      const { error } = await supabase.from('jobs').delete().eq('id', id)
+      if (error) throw error
       setJobs(prev => prev.filter(j => j.id !== id))
       toast.success(t('applicationDeleted'))
     } catch {
@@ -256,7 +266,7 @@ function App() {
   }
 
   const handleLogout = async () => {
-    await blink.auth.signOut()
+    await supabase.auth.signOut()
     setAuthView('landing')
     toast.success(t('signedOut'))
   }
