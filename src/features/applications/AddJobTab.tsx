@@ -229,7 +229,7 @@ export function AddJobTab({ user, jobTypes, onRefresh }: AddJobTabProps) {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-semibold text-muted-foreground uppercase">Länk till annons</label>
+                  <label className="text-xs font-semibold text-muted-foreground uppercase">{t('jobUrlLabel')}</label>
                   <Input
                     type="url"
                     placeholder="https://..."
@@ -242,7 +242,7 @@ export function AddJobTab({ user, jobTypes, onRefresh }: AddJobTabProps) {
                 <div className="pt-2 border-t border-border/30 space-y-3">
                   <p className="text-xs font-semibold text-muted-foreground uppercase flex items-center gap-1.5">
                     <FileText size={12} />
-                    Dokument (valfritt)
+                    {t('documentsOptional')}
                   </p>
                   <div className="grid grid-cols-1 gap-3">
                     <div className="space-y-1">

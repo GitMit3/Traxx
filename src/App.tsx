@@ -82,7 +82,7 @@ function MobileNav({ activeTab, onTabChange, t }: MobileNavProps) {
       {moreOpen && (
         <div className="fixed bottom-[calc(4rem+env(safe-area-inset-bottom))] left-4 right-4 z-50 md:hidden bg-background border border-border rounded-2xl shadow-2xl shadow-black/20 overflow-hidden">
           <div className="flex items-center justify-between px-4 py-3 border-b border-border/50">
-            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">More</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{t('mobileNavMore')}</span>
             <button
               onClick={() => setMoreOpen(false)}
               className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
@@ -155,10 +155,10 @@ function MobileNav({ activeTab, onTabChange, t }: MobileNavProps) {
                 ? 'text-primary'
                 : 'text-muted-foreground active:text-foreground'
             }`}
-            aria-label="More"
+            aria-label={t('mobileNavMore')}
           >
             <MoreHorizontal size={20} />
-            <span className="text-[10px] font-medium leading-none">More</span>
+            <span className="text-[10px] font-medium leading-none">{t('mobileNavMore')}</span>
           </button>
         </div>
       </nav>
@@ -260,6 +260,21 @@ function App() {
       toast.success(t('applicationDeleted'))
     } catch {
       toast.error(t('failedToDelete'))
+    }
+  }
+
+  const handleMarkApplied = async (id: string) => {
+    const today = new Date().toISOString().split('T')[0]
+    try {
+      const { error } = await supabase
+        .from('jobs')
+        .update({ status: 'Applied', date_applied: today })
+        .eq('id', id)
+      if (error) throw error
+      setJobs(prev => prev.map(j => j.id === id ? { ...j, status: 'Applied', dateApplied: today } : j))
+      toast.success(t('markedAsApplied'))
+    } catch {
+      toast.error(t('failedToUpdate'))
     }
   }
 
@@ -372,10 +387,10 @@ function App() {
             data-notif-trigger
             onClick={() => setNotifOpen(prev => !prev)}
             className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/70 relative transition-all duration-150"
-            aria-label="Notifications"
+            aria-label={t('notifications')}
           >
             <span className="shrink-0"><Bell size={17} /></span>
-            <span>Notifications</span>
+            <span>{t('notifications')}</span>
             {dueJobs.length > 0 && (
               <span className="absolute top-1.5 right-1.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold leading-none">
                 {dueJobs.length > 99 ? '99+' : dueJobs.length}
@@ -390,7 +405,7 @@ function App() {
               className="fixed bottom-[calc(theme(spacing.16)+env(safe-area-inset-bottom))] left-2 w-52 z-50 bg-background border border-border rounded-xl shadow-xl shadow-black/10 overflow-hidden"
             >
               <div className="flex items-center justify-between px-3 py-2.5 border-b border-border/50">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Follow-ups Due</span>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{t('followUpsDueHeader')}</span>
                 {dueJobs.length > 0 && (
                   <span className="min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-red-500 text-white text-[10px] font-bold">
                     {dueJobs.length}
@@ -400,7 +415,7 @@ function App() {
 
               {dueJobs.length === 0 ? (
                 <div className="px-3 py-4 text-center">
-                  <p className="text-xs text-muted-foreground">No follow-ups due</p>
+                  <p className="text-xs text-muted-foreground">{t('noFollowUpsDue')}</p>
                 </div>
               ) : (
                 <>
@@ -416,7 +431,7 @@ function App() {
                               ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
                               : 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
                           }`}>
-                            {status === 'overdue' ? 'Overdue' : 'Today'} · {formatDate(job.followUpDate)}
+                            {status === 'overdue' ? t('overdueSection') : t('todayLabel')} · {formatDate(job.followUpDate)}
                           </span>
                         </li>
                       )
@@ -427,7 +442,7 @@ function App() {
                       onClick={() => { setActiveTab('applications'); setNotifOpen(false) }}
                       className="w-full text-center text-xs font-medium text-primary hover:underline py-0.5"
                     >
-                      View all →
+                      {t('viewAll')}
                     </button>
                   </div>
                 </>
@@ -560,6 +575,7 @@ function App() {
                   jobTypes={jobTypes}
                   onEdit={setEditingJob}
                   onDelete={handleDeleteJob}
+                  onMarkApplied={handleMarkApplied}
                   initialFilterStatus={applicationsFilter}
                   onFilterConsumed={() => setApplicationsFilter('All')}
                 />
@@ -630,9 +646,9 @@ function App() {
                   value={editingJob.jobType || '__none__'}
                   onValueChange={(val: any) => setEditingJob({ ...editingJob, jobType: val === '__none__' ? '' : val })}
                 >
-                  <SelectTrigger className="h-10"><SelectValue placeholder="None" /></SelectTrigger>
+                  <SelectTrigger className="h-10"><SelectValue placeholder={t('noneSelected')} /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="__none__">None</SelectItem>
+                    <SelectItem value="__none__">{t('noneSelected')}</SelectItem>
                     {jobTypes.filter(tp => tp).map(tp => <SelectItem key={tp} value={tp}>{tp}</SelectItem>)}
                   </SelectContent>
                 </Select>
@@ -681,7 +697,7 @@ function App() {
                 </div>
               </div>
               <div className="md:col-span-2 space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Länk till annons</label>
+                <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{t('jobUrlLabel')}</label>
                 <Input value={editingJob.jobUrl || ''} onChange={e => setEditingJob({ ...editingJob, jobUrl: e.target.value })} className="h-10" placeholder="https://..." type="url" />
               </div>
               <div className="md:col-span-2 space-y-1.5">

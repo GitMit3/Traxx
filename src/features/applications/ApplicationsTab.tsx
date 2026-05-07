@@ -11,6 +11,7 @@ interface ApplicationsTabProps {
   jobTypes: string[]
   onEdit: (job: Job) => void
   onDelete: (id: string) => void
+  onMarkApplied: (id: string) => void
   initialFilterStatus?: JobStatus | 'All'
   onFilterConsumed?: () => void
 }
@@ -21,11 +22,12 @@ interface MobileJobCardProps {
   job: Job
   onEdit: (job: Job) => void
   onDelete: (id: string) => void
+  onMarkApplied: (id: string) => void
   t: (key: any) => string
   lang: string
 }
 
-function MobileJobCard({ job, onEdit, onDelete, t, lang }: MobileJobCardProps) {
+function MobileJobCard({ job, onEdit, onDelete, onMarkApplied, t, lang }: MobileJobCardProps) {
   const priority = (job.priority || 'Medium') as JobPriority
 
   const statusVariants: Record<JobStatus, 'default' | 'secondary' | 'outline' | 'destructive'> = {
@@ -79,7 +81,7 @@ function MobileJobCard({ job, onEdit, onDelete, t, lang }: MobileJobCardProps) {
             type="button"
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit(job) }}
             className="h-9 w-9 flex items-center justify-center rounded-xl text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-            aria-label={t('edit') || 'Edit'}
+            aria-label={t('editLabel')}
           >
             <Edit2 size={15} />
           </button>
@@ -87,7 +89,7 @@ function MobileJobCard({ job, onEdit, onDelete, t, lang }: MobileJobCardProps) {
             type="button"
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(job.id) }}
             className="h-9 w-9 flex items-center justify-center rounded-xl text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-            aria-label={t('delete') || 'Delete'}
+            aria-label={t('deleteLabel')}
           >
             <Trash2 size={15} />
           </button>
@@ -108,6 +110,17 @@ function MobileJobCard({ job, onEdit, onDelete, t, lang }: MobileJobCardProps) {
           {t(`priority${priority}` as any)}
         </span>
       </div>
+
+      {/* Mark as Applied button — only for Saved jobs */}
+      {job.status === 'Saved' && (
+        <button
+          type="button"
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onMarkApplied(job.id) }}
+          className="w-full h-8 rounded-lg border border-primary/40 text-primary text-xs font-semibold hover:bg-primary/10 transition-colors"
+        >
+          {t('markAsApplied')}
+        </button>
+      )}
 
       {/* Follow-up date (if set) */}
       {job.followUpDate && (
@@ -137,11 +150,12 @@ interface DesktopJobRowProps {
   job: Job
   onEdit: (job: Job) => void
   onDelete: (id: string) => void
+  onMarkApplied: (id: string) => void
   t: (key: any) => string
   lang: string
 }
 
-function DesktopJobRow({ job, onEdit, onDelete, t, lang }: DesktopJobRowProps) {
+function DesktopJobRow({ job, onEdit, onDelete, onMarkApplied, t, lang }: DesktopJobRowProps) {
   const priority = (job.priority || 'Medium') as JobPriority
 
   const statusVariants: Record<JobStatus, 'default' | 'secondary' | 'outline' | 'destructive'> = {
@@ -218,11 +232,20 @@ function DesktopJobRow({ job, onEdit, onDelete, t, lang }: DesktopJobRowProps) {
       {/* Actions */}
       <td className="px-4 py-3 align-middle">
         <div className="flex items-center gap-1">
+          {job.status === 'Saved' && (
+            <button
+              type="button"
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onMarkApplied(job.id) }}
+              className="h-8 px-2.5 flex items-center justify-center rounded-md border border-primary/40 text-primary text-[11px] font-semibold hover:bg-primary/10 transition-colors whitespace-nowrap"
+            >
+              {t('markAsApplied')}
+            </button>
+          )}
           <button
             type="button"
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit(job) }}
             className="h-8 w-8 flex items-center justify-center rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-            aria-label="Edit"
+            aria-label={t('editLabel')}
           >
             <Edit2 size={14} />
           </button>
@@ -230,7 +253,7 @@ function DesktopJobRow({ job, onEdit, onDelete, t, lang }: DesktopJobRowProps) {
             type="button"
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(job.id) }}
             className="h-8 w-8 flex items-center justify-center rounded-md text-destructive hover:text-destructive hover:bg-destructive/10 transition-colors"
-            aria-label="Delete"
+            aria-label={t('deleteLabel')}
           >
             <Trash2 size={14} />
           </button>
@@ -242,7 +265,7 @@ function DesktopJobRow({ job, onEdit, onDelete, t, lang }: DesktopJobRowProps) {
 
 // ─── ApplicationsTab ──────────────────────────────────────────────────────────
 
-export function ApplicationsTab({ jobs, jobTypes, onEdit, onDelete, initialFilterStatus, onFilterConsumed }: ApplicationsTabProps) {
+export function ApplicationsTab({ jobs, jobTypes, onEdit, onDelete, onMarkApplied, initialFilterStatus, onFilterConsumed }: ApplicationsTabProps) {
   const { t, lang } = useLanguage()
   const [searchQuery, setSearchQuery]   = useState('')
   const [sortOrder, setSortOrder]       = useState<'newest' | 'oldest' | 'priority-high' | 'priority-low' | 'followup-near'>('newest')
@@ -447,7 +470,7 @@ export function ApplicationsTab({ jobs, jobTypes, onEdit, onDelete, initialFilte
       {filteredJobs.length > 0 && (
         <div className="flex items-center justify-between md:hidden">
           <span className="text-xs text-muted-foreground">
-            {filteredJobs.length} {filteredJobs.length === 1 ? 'result' : 'results'}
+            {filteredJobs.length} {filteredJobs.length === 1 ? t('resultSingular') : t('resultPlural')}
           </span>
           {(filterStatus !== 'All' || filterType !== 'All' || filterCL !== 'All' || searchQuery) && (
             <button
@@ -460,7 +483,7 @@ export function ApplicationsTab({ jobs, jobTypes, onEdit, onDelete, initialFilte
               }}
               className="text-xs text-primary font-medium underline-offset-2 hover:underline"
             >
-              Clear filters
+              {t('clearAllFilters')}
             </button>
           )}
         </div>
@@ -482,6 +505,7 @@ export function ApplicationsTab({ jobs, jobTypes, onEdit, onDelete, initialFilte
                 job={job}
                 onEdit={onEdit}
                 onDelete={onDelete}
+                onMarkApplied={onMarkApplied}
                 t={t}
                 lang={lang}
               />
@@ -509,6 +533,7 @@ export function ApplicationsTab({ jobs, jobTypes, onEdit, onDelete, initialFilte
                       job={job}
                       onEdit={onEdit}
                       onDelete={onDelete}
+                      onMarkApplied={onMarkApplied}
                       t={t}
                       lang={lang}
                     />

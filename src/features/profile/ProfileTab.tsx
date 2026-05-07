@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import {
   Card, CardHeader, CardTitle, CardContent, Button, Input, Textarea,
-  PageDescription, toast,
+  PageDescription, toast, Select, SelectTrigger, SelectContent, SelectItem, SelectValue,
 } from '@blinkdotnew/ui'
-import { UserCircle, Camera, GraduationCap, Briefcase, Plus, Edit2, Trash2 } from 'lucide-react'
+import { UserCircle, Camera, GraduationCap, Briefcase, Plus, Edit2, Trash2, X } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useLanguage } from '../../lib/LanguageContext'
 import { UserProfile } from '../../lib/matchScore'
@@ -13,44 +13,168 @@ import { UserProfile } from '../../lib/matchScore'
 const JOB_TITLE_CATEGORIES = [
   {
     label: 'IT & Tech',
-    titles: ['IT-support', 'Systemadministratör', 'Nätverkstekniker', 'Helpdesk', 'Frontendutvecklare', 'Backendutvecklare', 'Fullstackutvecklare', 'Webbutvecklare', 'QA-ingenjör', 'Testledare', 'Mjukvarutestare'],
+    titles: [
+      'IT-support', 'Helpdesk', 'Systemadministratör', 'Nätverkstekniker',
+      'Frontendutvecklare', 'Backendutvecklare', 'Fullstackutvecklare', 'Webbutvecklare',
+      'Applikationsutvecklare', 'Systemutvecklare', 'Mobilutvecklare',
+      'DevOps-ingenjör', 'Molnarkitekt', 'Databasadministratör',
+      'QA-ingenjör', 'Testledare', 'Mjukvarutestare',
+      'Cybersäkerhetsanalytiker', 'IT-säkerhetsspecialist',
+      'UX-designer', 'UI-designer', 'Data Scientist', 'Dataingenjör',
+      'Maskininlärningsingenjör', 'IT-projektledare',
+    ],
   },
   {
     label: 'Ledarskap & Projekt',
-    titles: ['Projektledare', 'Scrum Master', 'Produktägare'],
+    titles: [
+      'Projektledare', 'Scrum Master', 'Produktägare', 'Teamledare',
+      'Programledare', 'Förändringsledare', 'Verksamhetsutvecklare',
+      'Affärsutvecklare', 'Strategikonsult', 'Operations Manager',
+      'Avdelningschef', 'Enhetschef', 'Processledare', 'VD-assistent',
+    ],
   },
   {
     label: 'Sälj & Kundservice',
-    titles: ['Kundtjänstmedarbetare', 'Kundservice', 'Säljare', 'Account Manager'],
+    titles: [
+      'Kundtjänstmedarbetare', 'Kundservicemedarbetare', 'Innesäljare', 'Utesäljare',
+      'Säljare', 'Account Manager', 'Key Account Manager', 'Säljansvarig',
+      'Kundansvarig', 'Telefonförsäljare', 'Affärsutvecklare',
+      'Marknadskoordinator', 'Retail Manager', 'Butikssäljare', 'Regionschef Sälj',
+    ],
   },
   {
     label: 'Ekonomi & HR',
-    titles: ['Ekonomiassistent', 'Redovisningsekonom', 'Controller', 'HR-specialist', 'Rekryterare'],
+    titles: [
+      'Ekonomiassistent', 'Redovisningsekonom', 'Controller', 'Finansanalytiker',
+      'Ekonomichef', 'CFO', 'Revisionsassistent', 'Löneadministratör',
+      'HR-specialist', 'HR-generalist', 'HR-chef', 'Personaladministratör',
+      'Rekryterare', 'Talent Acquisition Specialist', 'Compliance Officer',
+    ],
   },
   {
     label: 'Utbildning & Vård',
-    titles: ['Lärare', 'Förskollärare', 'Elevassistent', 'Undersköterska', 'Sjuksköterska', 'Vårdbiträde'],
+    titles: [
+      'Lärare', 'Förskollärare', 'Fritidspedagog', 'Elevassistent', 'Specialpedagog',
+      'Skolkurator', 'Rektor', 'Undersköterska', 'Sjuksköterska', 'Specialistsjuksköterska',
+      'Vårdbiträde', 'Läkarsekreterare', 'Medicinsk sekreterare',
+      'Psykolog', 'Socionom', 'Biståndshandläggare',
+    ],
   },
   {
     label: 'Lager & Logistik',
-    titles: ['Lagerarbetare', 'Truckförare', 'Logistiker'],
+    titles: [
+      'Lagerarbetare', 'Lagerkoordinator', 'Lagerchef', 'Truckförare',
+      'Logistiker', 'Speditör', 'Transportplanerare', 'Distributionschef',
+      'Inköpare', 'Supply Chain Manager', 'Godshanterare', 'Fraktkoordinator',
+      'Tulldeklarant', 'Lagerplanerare',
+    ],
+  },
+  {
+    label: 'Bygg & Teknik',
+    titles: [
+      'Elektriker', 'VVS-montör', 'Rörmontör', 'Snickare', 'Svetsare',
+      'Byggarbetare', 'Platschef', 'Konstruktör', 'Civilingenjör', 'Ingenjör',
+      'CAD-tekniker', 'Fastighetstekniker', 'Fastighetsskötare',
+      'Maskinoperatör', 'Drifttekniker',
+    ],
+  },
+  {
+    label: 'Marknad & Kommunikation',
+    titles: [
+      'Marknadsförare', 'Content Manager', 'Copywriter', 'SEO-specialist',
+      'SEM-specialist', 'Social Media Manager', 'Growth Hacker',
+      'Grafisk designer', 'Art Director', 'Brand Manager',
+      'Kommunikatör', 'PR-konsult', 'Eventkoordinator',
+      'Webbanalytiker', 'E-handelsspecialist',
+    ],
   },
 ]
 
-const LOCATIONS = [
-  'Stockholm', 'Göteborg', 'Malmö', 'Uppsala', 'Linköping', 'Örebro',
-  'Västerås', 'Helsingborg', 'Norrköping', 'Jönköping', 'Umeå', 'Lund',
-  'Borås', 'Sundsvall', 'Gävle', 'Södertälje', 'Eskilstuna', 'Halmstad',
-  'Växjö', 'Karlstad', 'Östersund',
-  'Huddinge', 'Nacka', 'Järfälla', 'Täby', 'Haninge', 'Sollentuna',
-  'Upplands Väsby', 'Botkyrka', 'Tyresö', 'Lidingö', 'Danderyd',
-  'Solna', 'Sundbyberg', 'Tumba',
-  'Falun', 'Borlänge', 'Köping', 'Enköping', 'Nyköping', 'Katrineholm',
-  'Motala', 'Mjölby',
-  'Kristianstad', 'Landskrona', 'Trelleborg', 'Ystad', 'Kalmar', 'Karlskrona',
-  'Trollhättan', 'Skövde', 'Alingsås', 'Varberg', 'Uddevalla', 'Lidköping',
-  'Härnösand', 'Skellefteå', 'Luleå', 'Kiruna',
-  'Distans',
+const LOCATION_REGIONS = [
+  {
+    label: 'Stockholms län',
+    cities: ['Stockholm', 'Solna', 'Sundbyberg', 'Huddinge', 'Nacka', 'Järfälla', 'Täby', 'Haninge', 'Sollentuna', 'Upplands Väsby', 'Botkyrka', 'Tyresö', 'Lidingö', 'Danderyd', 'Södertälje', 'Tumba', 'Sigtuna', 'Norrtälje'],
+  },
+  {
+    label: 'Västra Götaland',
+    cities: ['Göteborg', 'Mölndal', 'Borås', 'Trollhättan', 'Uddevalla', 'Skövde', 'Alingsås', 'Lidköping', 'Mariestad', 'Kungälv', 'Lerum', 'Stenungsund', 'Vänersborg', 'Falköping'],
+  },
+  {
+    label: 'Skåne',
+    cities: ['Malmö', 'Helsingborg', 'Lund', 'Kristianstad', 'Landskrona', 'Trelleborg', 'Ystad', 'Vellinge', 'Staffanstorp', 'Eslöv', 'Hässleholm', 'Ängelholm', 'Höganäs', 'Klippan'],
+  },
+  {
+    label: 'Uppsala län',
+    cities: ['Uppsala', 'Enköping', 'Knivsta', 'Tierp', 'Bålsta', 'Östhammar'],
+  },
+  {
+    label: 'Södermanland',
+    cities: ['Eskilstuna', 'Nyköping', 'Katrineholm', 'Strängnäs', 'Flen', 'Oxelösund'],
+  },
+  {
+    label: 'Östergötland',
+    cities: ['Linköping', 'Norrköping', 'Motala', 'Mjölby', 'Finspång', 'Söderköping', 'Åtvidaberg'],
+  },
+  {
+    label: 'Jönköpings län',
+    cities: ['Jönköping', 'Huskvarna', 'Nässjö', 'Vetlanda', 'Eksjö', 'Värnamo', 'Tranås', 'Sävsjö'],
+  },
+  {
+    label: 'Kronoberg',
+    cities: ['Växjö', 'Ljungby', 'Alvesta', 'Markaryd', 'Tingsryd', 'Älmhult'],
+  },
+  {
+    label: 'Kalmar län',
+    cities: ['Kalmar', 'Oskarshamn', 'Västervik', 'Nybro', 'Vimmerby', 'Borgholm'],
+  },
+  {
+    label: 'Halland',
+    cities: ['Halmstad', 'Varberg', 'Kungsbacka', 'Falkenberg', 'Laholm', 'Hylte'],
+  },
+  {
+    label: 'Blekinge',
+    cities: ['Karlskrona', 'Karlshamn', 'Ronneby', 'Sölvesborg', 'Olofström'],
+  },
+  {
+    label: 'Örebro län',
+    cities: ['Örebro', 'Karlskoga', 'Kumla', 'Hallsberg', 'Laxå', 'Lindesberg'],
+  },
+  {
+    label: 'Västmanland',
+    cities: ['Västerås', 'Köping', 'Sala', 'Arboga', 'Fagersta', 'Surahammar'],
+  },
+  {
+    label: 'Dalarna',
+    cities: ['Falun', 'Borlänge', 'Ludvika', 'Avesta', 'Mora', 'Rättvik', 'Malung'],
+  },
+  {
+    label: 'Värmland',
+    cities: ['Karlstad', 'Kristinehamn', 'Arvika', 'Sunne', 'Filipstad', 'Hagfors', 'Säffle'],
+  },
+  {
+    label: 'Gävleborg',
+    cities: ['Gävle', 'Sandviken', 'Hudiksvall', 'Bollnäs', 'Söderhamn', 'Ljusdal'],
+  },
+  {
+    label: 'Västernorrland',
+    cities: ['Sundsvall', 'Härnösand', 'Örnsköldsvik', 'Kramfors', 'Sollefteå', 'Timrå'],
+  },
+  {
+    label: 'Jämtland',
+    cities: ['Östersund', 'Åre', 'Strömsund', 'Krokom', 'Bräcke'],
+  },
+  {
+    label: 'Västerbotten',
+    cities: ['Umeå', 'Skellefteå', 'Lycksele', 'Storuman', 'Vilhelmina', 'Vindeln'],
+  },
+  {
+    label: 'Norrbotten',
+    cities: ['Luleå', 'Kiruna', 'Gällivare', 'Piteå', 'Boden', 'Haparanda', 'Kalix'],
+  },
+  {
+    label: 'Gotland',
+    cities: ['Visby', 'Gotland'],
+  },
 ]
 
 
@@ -140,6 +264,12 @@ export function ProfileTab({ user, profile, onProfileSaved }: ProfileTabProps) {
     preferredTitles: '', preferredLocations: '', otherPreferences: '',
   })
   const [saving, setSaving] = useState(false)
+
+  // Job title category picker
+  const [selectedCategory, setSelectedCategory] = useState('')
+
+  // Location region picker
+  const [selectedRegion, setSelectedRegion] = useState('')
 
   // Structured entries
   const [eduEntries, setEduEntries] = useState<EduEntry[]>([])
@@ -374,42 +504,91 @@ export function ProfileTab({ user, profile, onProfileSaved }: ProfileTabProps) {
         </CardContent>
       </Card>
 
-      {/* ── Job titles (categorized pills) ── */}
+      {/* ── Job titles (bransch dropdown + pills) ── */}
       <Card className="border-border/50 shadow-sm">
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <Briefcase size={18} className="text-primary" />
             {t('profileTitles')}
           </CardTitle>
-          <PageDescription>Select the job titles you're looking for.</PageDescription>
+          <PageDescription>Välj bransch och klicka på titlarna du söker.</PageDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {JOB_TITLE_CATEGORIES.map(category => (
-              <div key={category.label} className="space-y-1.5">
-                <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">{category.label}</p>
-                <div className="flex flex-wrap gap-2">
-                  {category.titles.map(title => {
-                    const selected = localProfile.preferredTitles.split(',').map(s => s.trim()).includes(title)
-                    return (
-                      <button
+          {(() => {
+            const selectedTitles = localProfile.preferredTitles.split(',').map(s => s.trim()).filter(Boolean)
+            const toggleTitle = (title: string) => {
+              const updated = selectedTitles.includes(title)
+                ? selectedTitles.filter(t => t !== title)
+                : [...selectedTitles, title]
+              setLocalProfile(p => ({ ...p, preferredTitles: updated.join(', ') }))
+            }
+            const categoryTitles = JOB_TITLE_CATEGORIES.find(c => c.label === selectedCategory)?.titles ?? []
+
+            return (
+              <div className="space-y-4">
+                {/* Selected titles — compact removable pills */}
+                {selectedTitles.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 pb-1">
+                    {selectedTitles.map(title => (
+                      <span
                         key={title}
-                        type="button"
-                        onClick={() => {
-                          const current = localProfile.preferredTitles.split(',').map(s => s.trim()).filter(Boolean)
-                          const updated = selected ? current.filter(t => t !== title) : [...current, title]
-                          setLocalProfile(p => ({ ...p, preferredTitles: updated.join(', ') }))
-                        }}
-                        className={`px-3 py-1 rounded-full text-xs font-medium border transition-all ${selected ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-muted-foreground border-border hover:border-primary/50'}`}
+                        className="inline-flex items-center gap-1 pl-2.5 pr-1.5 py-0.5 rounded-full text-xs font-medium bg-primary text-primary-foreground"
                       >
                         {title}
-                      </button>
-                    )
-                  })}
-                </div>
+                        <button
+                          type="button"
+                          onClick={() => toggleTitle(title)}
+                          className="flex items-center justify-center w-4 h-4 rounded-full hover:bg-primary-foreground/20 transition-colors"
+                          aria-label={`Ta bort ${title}`}
+                        >
+                          <X size={9} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Bransch / industry dropdown */}
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Välj bransch…" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {JOB_TITLE_CATEGORIES.map(cat => (
+                      <SelectItem key={cat.label} value={cat.label}>{cat.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {/* Titles for the selected category */}
+                {selectedCategory ? (
+                  <div className="flex flex-wrap gap-2">
+                    {categoryTitles.map(title => {
+                      const isSelected = selectedTitles.includes(title)
+                      return (
+                        <button
+                          key={title}
+                          type="button"
+                          onClick={() => toggleTitle(title)}
+                          className={`px-3 py-1 rounded-full text-xs font-medium border transition-all ${
+                            isSelected
+                              ? 'bg-primary text-primary-foreground border-primary'
+                              : 'bg-background text-muted-foreground border-border hover:border-primary/50 hover:text-foreground'
+                          }`}
+                        >
+                          {title}
+                        </button>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground text-center py-4">
+                    Välj en bransch ovan för att se jobbtitlar
+                  </p>
+                )}
               </div>
-            ))}
-          </div>
+            )
+          })()}
         </CardContent>
       </Card>
 
@@ -420,28 +599,98 @@ export function ProfileTab({ user, profile, onProfileSaved }: ProfileTabProps) {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
             {t('profileLocations')}
           </CardTitle>
-          <PageDescription>Select the cities or regions you're open to work in.</PageDescription>
+          <PageDescription>Välj län och klicka på orterna du är öppen för att arbeta i.</PageDescription>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-wrap gap-2">
-            {LOCATIONS.map(location => {
-              const selected = localProfile.preferredLocations.split(',').map(s => s.trim()).includes(location)
-              return (
+          {(() => {
+            const selectedLocations = localProfile.preferredLocations.split(',').map(s => s.trim()).filter(Boolean)
+            const toggleLocation = (loc: string) => {
+              const updated = selectedLocations.includes(loc)
+                ? selectedLocations.filter(l => l !== loc)
+                : [...selectedLocations, loc]
+              setLocalProfile(p => ({ ...p, preferredLocations: updated.join(', ') }))
+            }
+            const regionCities = LOCATION_REGIONS.find(r => r.label === selectedRegion)?.cities ?? []
+            const distansSelected = selectedLocations.includes('Distans')
+
+            return (
+              <div className="space-y-4">
+                {/* Selected locations — compact removable pills */}
+                {selectedLocations.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 pb-1">
+                    {selectedLocations.map(loc => (
+                      <span
+                        key={loc}
+                        className="inline-flex items-center gap-1 pl-2.5 pr-1.5 py-0.5 rounded-full text-xs font-medium bg-primary text-primary-foreground"
+                      >
+                        {loc}
+                        <button
+                          type="button"
+                          onClick={() => toggleLocation(loc)}
+                          className="flex items-center justify-center w-4 h-4 rounded-full hover:bg-primary-foreground/20 transition-colors"
+                          aria-label={`Ta bort ${loc}`}
+                        >
+                          <X size={9} />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Distans — always visible standalone toggle */}
                 <button
-                  key={location}
                   type="button"
-                  onClick={() => {
-                    const current = localProfile.preferredLocations.split(',').map(s => s.trim()).filter(Boolean)
-                    const updated = selected ? current.filter(l => l !== location) : [...current, location]
-                    setLocalProfile(p => ({ ...p, preferredLocations: updated.join(', ') }))
-                  }}
-                  className={`px-3 py-1 rounded-full text-xs font-medium border transition-all ${selected ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-muted-foreground border-border hover:border-primary/50'}`}
+                  onClick={() => toggleLocation('Distans')}
+                  className={`px-3 py-1 rounded-full text-xs font-medium border transition-all ${
+                    distansSelected
+                      ? 'bg-primary text-primary-foreground border-primary'
+                      : 'bg-background text-muted-foreground border-border hover:border-primary/50 hover:text-foreground'
+                  }`}
                 >
-                  {location}
+                  Distans
                 </button>
-              )
-            })}
-          </div>
+
+                {/* Län / region dropdown */}
+                <Select value={selectedRegion} onValueChange={setSelectedRegion}>
+                  <SelectTrigger className="h-10">
+                    <SelectValue placeholder="Välj län…" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {LOCATION_REGIONS.map(region => (
+                      <SelectItem key={region.label} value={region.label}>{region.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                {/* Cities for the selected region */}
+                {selectedRegion ? (
+                  <div className="flex flex-wrap gap-2">
+                    {regionCities.map(city => {
+                      const isSelected = selectedLocations.includes(city)
+                      return (
+                        <button
+                          key={city}
+                          type="button"
+                          onClick={() => toggleLocation(city)}
+                          className={`px-3 py-1 rounded-full text-xs font-medium border transition-all ${
+                            isSelected
+                              ? 'bg-primary text-primary-foreground border-primary'
+                              : 'bg-background text-muted-foreground border-border hover:border-primary/50 hover:text-foreground'
+                          }`}
+                        >
+                          {city}
+                        </button>
+                      )
+                    })}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground text-center py-4">
+                    Välj ett län ovan för att se orter
+                  </p>
+                )}
+              </div>
+            )
+          })()}
         </CardContent>
       </Card>
 

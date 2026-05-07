@@ -17,15 +17,15 @@ interface SettingsTabProps {
   onLangChange: (lang: Language) => void
 }
 
-const THEME_SWATCHES: { key: ThemeOption; color: string; labelKey: string; description: string }[] = [
-  { key: 'forest',   color: 'bg-[hsl(155,60%,22%)]',  labelKey: 'themeDefault',  description: 'Calm & earthy' },
-  { key: 'ocean',    color: 'bg-[hsl(213,78%,32%)]',  labelKey: 'themeBlue',     description: 'Cool & professional' },
-  { key: 'purple',   color: 'bg-[hsl(268,55%,40%)]',  labelKey: 'themePurple',   description: 'Creative & bold' },
-  { key: 'slate',    color: 'bg-[hsl(215,28%,22%)]',  labelKey: 'themeSlate',    description: 'Neutral & corporate' },
-  { key: 'sand',     color: 'bg-[hsl(28,55%,35%)]',   labelKey: 'themeSand',     description: 'Warm & natural' },
-  { key: 'midnight', color: 'bg-[hsl(221,83%,38%)]',  labelKey: 'themeMidnight', description: 'Deep & professional' },
-  { key: 'rose',     color: 'bg-[hsl(330,65%,40%)]',  labelKey: 'themeRose',     description: 'Warm & elegant' },
-  { key: 'nordic',   color: 'bg-[hsl(215,14%,28%)]',  labelKey: 'themeNordic',   description: 'Cool & minimal' },
+const THEME_SWATCHES: { key: ThemeOption; color: string; labelKey: string; descKey: string }[] = [
+  { key: 'forest',   color: 'bg-[hsl(155,60%,22%)]',  labelKey: 'themeDefault',  descKey: 'themeDescForest' },
+  { key: 'ocean',    color: 'bg-[hsl(213,78%,32%)]',  labelKey: 'themeBlue',     descKey: 'themeDescOcean' },
+  { key: 'purple',   color: 'bg-[hsl(268,55%,40%)]',  labelKey: 'themePurple',   descKey: 'themeDescPurple' },
+  { key: 'slate',    color: 'bg-[hsl(215,28%,22%)]',  labelKey: 'themeSlate',    descKey: 'themeDescSlate' },
+  { key: 'sand',     color: 'bg-[hsl(28,55%,35%)]',   labelKey: 'themeSand',     descKey: 'themeDescSand' },
+  { key: 'midnight', color: 'bg-[hsl(221,83%,38%)]',  labelKey: 'themeMidnight', descKey: 'themeDescMidnight' },
+  { key: 'rose',     color: 'bg-[hsl(330,65%,40%)]',  labelKey: 'themeRose',     descKey: 'themeDescRose' },
+  { key: 'nordic',   color: 'bg-[hsl(215,14%,28%)]',  labelKey: 'themeNordic',   descKey: 'themeDescNordic' },
 ]
 
 const COLOR_MODES: { key: ColorMode; labelKey: string }[] = [
@@ -81,7 +81,7 @@ export function SettingsTab({ user, jobTypes, jobs, onRefresh, onLogout, lang, o
       await supabase.auth.signOut({ scope: 'global' })
       onLogout()
     } catch (err: any) {
-      toast.error(err?.message || 'Failed to sign out')
+      toast.error(err?.message || t('signOutFailed'))
     } finally {
       setGlobalSignOutLoading(false)
     }
@@ -190,7 +190,7 @@ export function SettingsTab({ user, jobTypes, jobs, onRefresh, onLogout, lang, o
         </CardHeader>
         <CardContent className="space-y-5">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-            {THEME_SWATCHES.map(({ key, color, labelKey, description }) => (
+            {THEME_SWATCHES.map(({ key, color, labelKey, descKey }) => (
               <button
                 key={key}
                 onClick={() => setTheme(key)}
@@ -204,7 +204,7 @@ export function SettingsTab({ user, jobTypes, jobs, onRefresh, onLogout, lang, o
                 <span className={`w-10 h-10 rounded-full ${color} shadow-sm transition-all duration-200 ${theme === key ? 'scale-110 ring-2 ring-offset-2 ring-primary' : 'group-hover:scale-105'}`} />
                 <div className="text-center">
                   <p className={`text-[12px] font-semibold leading-tight ${theme === key ? 'text-primary' : 'text-foreground'}`}>{t(labelKey as any)}</p>
-                  <p className="text-[10px] text-muted-foreground mt-0.5">{description}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{t(descKey as any)}</p>
                 </div>
                 {theme === key && (
                   <span className="w-4 h-4 rounded-full bg-primary flex items-center justify-center">
@@ -341,7 +341,7 @@ export function SettingsTab({ user, jobTypes, jobs, onRefresh, onLogout, lang, o
               className="gap-2 w-full border-destructive/40 text-destructive hover:bg-destructive/5 hover:border-destructive"
             >
               <Trash2 size={16} />
-              Delete Account
+              {t('deleteAccountTitle')}
             </Button>
           </CardContent>
         </Card>
@@ -353,16 +353,22 @@ export function SettingsTab({ user, jobTypes, jobs, onRefresh, onLogout, lang, o
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-destructive">
               <AlertTriangle size={20} />
-              Delete Account
+              {t('deleteAccountTitle')}
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
             <p className="text-sm text-foreground font-medium">
-              This will permanently delete your account and all associated data:
+              {t('deleteAccountWarning')}
             </p>
             <ul className="text-sm text-muted-foreground space-y-1 list-none">
-              {['All job applications', 'Job types & categories', 'Profile information', 'CV files & cover letters', 'Uploaded documents'].map(item => (
+              {([
+                t('deleteDataApplications'),
+                t('deleteDataJobTypes'),
+                t('deleteDataProfile'),
+                t('deleteDataDocuments'),
+                t('deleteDataUploads'),
+              ]).map(item => (
                 <li key={item} className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-destructive/60 shrink-0" />
                   {item}
@@ -371,7 +377,7 @@ export function SettingsTab({ user, jobTypes, jobs, onRefresh, onLogout, lang, o
             </ul>
             <div className="rounded-lg bg-destructive/8 border border-destructive/20 px-3 py-2.5">
               <p className="text-xs font-semibold text-destructive">
-                This action cannot be undone. Your email can be used to create a new account.
+                {t('deleteAccountIrreversible')}
               </p>
             </div>
           </div>
@@ -382,7 +388,7 @@ export function SettingsTab({ user, jobTypes, jobs, onRefresh, onLogout, lang, o
               onClick={() => setShowDeleteConfirm(false)}
               disabled={deleteLoading}
             >
-              Cancel
+              {t('cancel')}
             </Button>
             <Button
               variant="destructive"
@@ -391,8 +397,8 @@ export function SettingsTab({ user, jobTypes, jobs, onRefresh, onLogout, lang, o
               className="gap-2 min-w-[140px]"
             >
               {deleteLoading
-                ? <><Loader2 size={14} className="animate-spin" /> Deleting…</>
-                : <><Trash2 size={14} /> Delete Account</>
+                ? <><Loader2 size={14} className="animate-spin" /> {t('deletingAccount')}</>
+                : <><Trash2 size={14} /> {t('deleteAccountTitle')}</>
               }
             </Button>
           </DialogFooter>
