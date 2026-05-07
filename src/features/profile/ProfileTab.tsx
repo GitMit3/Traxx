@@ -198,38 +198,40 @@ function parseExpEntries(raw: string): ExpEntry[] {
 }
 
 function EduForm({ initial = BLANK_EDU, onSave, onCancel }: { initial?: Omit<EduEntry,'id'>; onSave: (d: Omit<EduEntry,'id'>) => void; onCancel: () => void }) {
+  const { t } = useLanguage()
   const [form, setForm] = useState(initial)
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => setForm(f => ({ ...f, [k]: e.target.value }))
   return (
     <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3 mt-2">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="space-y-1"><label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Program / Degree</label><Input placeholder="e.g. BSc Computer Science" value={form.program} onChange={set('program')} /></div>
-        <div className="space-y-1"><label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">School / University</label><Input placeholder="e.g. Uppsala University" value={form.school} onChange={set('school')} /></div>
-        <div className="space-y-1"><label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Start Year</label><Input placeholder="e.g. 2018" value={form.startYear} onChange={set('startYear')} /></div>
-        <div className="space-y-1"><label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">End Year</label><Input placeholder="e.g. 2022 or Present" value={form.endYear} onChange={set('endYear')} /></div>
+        <div className="space-y-1"><label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t('programDegreeLabel')}</label><Input placeholder={t('programDegreePlaceholder')} value={form.program} onChange={set('program')} /></div>
+        <div className="space-y-1"><label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t('schoolUniversityLabel')}</label><Input placeholder={t('schoolUniversityPlaceholder')} value={form.school} onChange={set('school')} /></div>
+        <div className="space-y-1"><label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t('startYearLabel')}</label><Input placeholder={t('startYearPlaceholder')} value={form.startYear} onChange={set('startYear')} /></div>
+        <div className="space-y-1"><label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t('endYearLabel')}</label><Input placeholder={t('endYearPlaceholder')} value={form.endYear} onChange={set('endYear')} /></div>
       </div>
       <div className="flex gap-2 pt-1">
-        <Button size="sm" onClick={() => { if (form.program.trim()) onSave(form) }}>Save</Button>
-        <Button size="sm" variant="ghost" onClick={onCancel}>Cancel</Button>
+        <Button size="sm" onClick={() => { if (form.program.trim()) onSave(form) }}>{t('save')}</Button>
+        <Button size="sm" variant="ghost" onClick={onCancel}>{t('cancelBtn')}</Button>
       </div>
     </div>
   )
 }
 
 function ExpForm({ initial = BLANK_EXP, onSave, onCancel }: { initial?: Omit<ExpEntry,'id'>; onSave: (d: Omit<ExpEntry,'id'>) => void; onCancel: () => void }) {
+  const { t } = useLanguage()
   const [form, setForm] = useState(initial)
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => setForm(f => ({ ...f, [k]: e.target.value }))
   return (
     <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3 mt-2">
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="space-y-1"><label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Job Title / Role</label><Input placeholder="e.g. Senior Engineer" value={form.role} onChange={set('role')} /></div>
-        <div className="space-y-1"><label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Company</label><Input placeholder="e.g. Acme Corp" value={form.company} onChange={set('company')} /></div>
-        <div className="space-y-1"><label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Start Year</label><Input placeholder="e.g. 2020" value={form.startYear} onChange={set('startYear')} /></div>
-        <div className="space-y-1"><label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">End Year</label><Input placeholder="e.g. 2023 or Present" value={form.endYear} onChange={set('endYear')} /></div>
+        <div className="space-y-1"><label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t('jobTitleRoleLabel')}</label><Input placeholder={t('jobTitleRolePlaceholder')} value={form.role} onChange={set('role')} /></div>
+        <div className="space-y-1"><label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t('company')}</label><Input placeholder={t('companyExpPlaceholder')} value={form.company} onChange={set('company')} /></div>
+        <div className="space-y-1"><label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t('startYearLabel')}</label><Input placeholder={t('startYearPlaceholder')} value={form.startYear} onChange={set('startYear')} /></div>
+        <div className="space-y-1"><label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t('endYearLabel')}</label><Input placeholder={t('endYearExpPlaceholder')} value={form.endYear} onChange={set('endYear')} /></div>
       </div>
       <div className="flex gap-2 pt-1">
-        <Button size="sm" onClick={() => { if (form.role.trim()) onSave(form) }}>Save</Button>
-        <Button size="sm" variant="ghost" onClick={onCancel}>Cancel</Button>
+        <Button size="sm" onClick={() => { if (form.role.trim()) onSave(form) }}>{t('save')}</Button>
+        <Button size="sm" variant="ghost" onClick={onCancel}>{t('cancelBtn')}</Button>
       </div>
     </div>
   )
@@ -323,7 +325,7 @@ export function ProfileTab({ user, profile, onProfileSaved }: ProfileTabProps) {
       await supabase.auth.updateUser({ data: { avatar_url: publicUrl } })
       toast.success(t('uploadPhoto'))
     } catch {
-      toast.error('Failed to upload photo')
+      toast.error(t('uploadPhotoFailed'))
     } finally {
       setUploadingAvatar(false)
     }
@@ -467,9 +469,9 @@ export function ProfileTab({ user, profile, onProfileSaved }: ProfileTabProps) {
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <UserCircle size={18} className="text-primary" />
-            Personal Info
+            {t('personalInfoTitle')}
           </CardTitle>
-          <PageDescription>Your name and a short tagline about yourself.</PageDescription>
+          <PageDescription>{t('personalInfoDesc')}</PageDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -511,7 +513,7 @@ export function ProfileTab({ user, profile, onProfileSaved }: ProfileTabProps) {
             <Briefcase size={18} className="text-primary" />
             {t('profileTitles')}
           </CardTitle>
-          <PageDescription>Välj bransch och klicka på titlarna du söker.</PageDescription>
+          <PageDescription>{t('selectIndustryDesc')}</PageDescription>
         </CardHeader>
         <CardContent>
           {(() => {
@@ -539,7 +541,7 @@ export function ProfileTab({ user, profile, onProfileSaved }: ProfileTabProps) {
                           type="button"
                           onClick={() => toggleTitle(title)}
                           className="flex items-center justify-center w-4 h-4 rounded-full hover:bg-primary-foreground/20 transition-colors"
-                          aria-label={`Ta bort ${title}`}
+                          aria-label={t('removeLabel')}
                         >
                           <X size={9} />
                         </button>
@@ -551,7 +553,7 @@ export function ProfileTab({ user, profile, onProfileSaved }: ProfileTabProps) {
                 {/* Bransch / industry dropdown */}
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                   <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Välj bransch…" />
+                    <SelectValue placeholder={t('selectIndustryPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
                     {JOB_TITLE_CATEGORIES.map(cat => (
@@ -583,7 +585,7 @@ export function ProfileTab({ user, profile, onProfileSaved }: ProfileTabProps) {
                   </div>
                 ) : (
                   <p className="text-xs text-muted-foreground text-center py-4">
-                    Välj en bransch ovan för att se jobbtitlar
+                    {t('selectIndustryFirst')}
                   </p>
                 )}
               </div>
@@ -599,7 +601,7 @@ export function ProfileTab({ user, profile, onProfileSaved }: ProfileTabProps) {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
             {t('profileLocations')}
           </CardTitle>
-          <PageDescription>Välj län och klicka på orterna du är öppen för att arbeta i.</PageDescription>
+          <PageDescription>{t('selectLocationDesc')}</PageDescription>
         </CardHeader>
         <CardContent>
           {(() => {
@@ -628,7 +630,7 @@ export function ProfileTab({ user, profile, onProfileSaved }: ProfileTabProps) {
                           type="button"
                           onClick={() => toggleLocation(loc)}
                           className="flex items-center justify-center w-4 h-4 rounded-full hover:bg-primary-foreground/20 transition-colors"
-                          aria-label={`Ta bort ${loc}`}
+                          aria-label={t('removeLabel')}
                         >
                           <X size={9} />
                         </button>
@@ -647,13 +649,13 @@ export function ProfileTab({ user, profile, onProfileSaved }: ProfileTabProps) {
                       : 'bg-background text-muted-foreground border-border hover:border-primary/50 hover:text-foreground'
                   }`}
                 >
-                  Distans
+                  {t('remoteWork')}
                 </button>
 
                 {/* Län / region dropdown */}
                 <Select value={selectedRegion} onValueChange={setSelectedRegion}>
                   <SelectTrigger className="h-10">
-                    <SelectValue placeholder="Välj län…" />
+                    <SelectValue placeholder={t('selectRegionPlaceholder')} />
                   </SelectTrigger>
                   <SelectContent>
                     {LOCATION_REGIONS.map(region => (
@@ -685,7 +687,7 @@ export function ProfileTab({ user, profile, onProfileSaved }: ProfileTabProps) {
                   </div>
                 ) : (
                   <p className="text-xs text-muted-foreground text-center py-4">
-                    Välj ett län ovan för att se orter
+                    {t('selectRegionFirst')}
                   </p>
                 )}
               </div>
@@ -706,7 +708,7 @@ export function ProfileTab({ user, profile, onProfileSaved }: ProfileTabProps) {
             </div>
             {!showEduForm && !editingEduId && (
               <Button size="sm" variant="ghost" className="h-7 text-xs gap-1 text-primary hover:text-primary" onClick={() => setShowEduForm(true)}>
-                <Plus size={13} /> Add
+                <Plus size={13} /> {t('addButton')}
               </Button>
             )}
           </div>
@@ -732,7 +734,7 @@ export function ProfileTab({ user, profile, onProfileSaved }: ProfileTabProps) {
             </div>
           ))}
           {showEduForm && <EduForm onSave={handleAddEdu} onCancel={() => setShowEduForm(false)} />}
-          {eduEntries.length === 0 && !showEduForm && <p className="text-xs text-muted-foreground italic py-1">No education entries yet.</p>}
+          {eduEntries.length === 0 && !showEduForm && <p className="text-xs text-muted-foreground italic py-1">{t('noEducationYet')}</p>}
         </CardContent>
       </Card>
 
@@ -748,7 +750,7 @@ export function ProfileTab({ user, profile, onProfileSaved }: ProfileTabProps) {
             </div>
             {!showExpForm && !editingExpId && (
               <Button size="sm" variant="ghost" className="h-7 text-xs gap-1 text-primary hover:text-primary" onClick={() => setShowExpForm(true)}>
-                <Plus size={13} /> Add
+                <Plus size={13} /> {t('addButton')}
               </Button>
             )}
           </div>
@@ -774,7 +776,7 @@ export function ProfileTab({ user, profile, onProfileSaved }: ProfileTabProps) {
             </div>
           ))}
           {showExpForm && <ExpForm onSave={handleAddExp} onCancel={() => setShowExpForm(false)} />}
-          {expEntries.length === 0 && !showExpForm && <p className="text-xs text-muted-foreground italic py-1">No experience entries yet.</p>}
+          {expEntries.length === 0 && !showExpForm && <p className="text-xs text-muted-foreground italic py-1">{t('noExperienceYet')}</p>}
         </CardContent>
       </Card>
 

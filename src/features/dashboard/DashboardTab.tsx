@@ -40,27 +40,27 @@ export function DashboardTab({ jobs, jobTypes, onNavigateToApplications, onNavig
 
   const buildReportText = () => {
     const lines: string[] = [
-      `AKTIVITETSRAPPORT \u2014 ${reportMonthLabel}`,
-      `Namn: ${((userProfile as any)?.firstName || (userProfile as any)?.first_name) && ((userProfile as any)?.lastName || (userProfile as any)?.last_name) ? `${(userProfile as any)?.firstName || (userProfile as any)?.first_name} ${(userProfile as any)?.lastName || (userProfile as any)?.last_name}` : user?.email ?? ''}` ,
+      `${t('activityReportTitle')} \u2014 ${reportMonthLabel}`,
+      `${t('reportNameLabel')}: ${((userProfile as any)?.firstName || (userProfile as any)?.first_name) && ((userProfile as any)?.lastName || (userProfile as any)?.last_name) ? `${(userProfile as any)?.firstName || (userProfile as any)?.first_name} ${(userProfile as any)?.lastName || (userProfile as any)?.last_name}` : user?.email ?? ''}`,
       '',
-      'Jobbsökningsaktiviteter:',
+      t('jobSearchActivitiesLabel'),
     ]
     reportJobs.forEach((j, i) => {
-      lines.push(`${i + 1}. ${j.dateApplied} \u2014 Ans\u00f6kan till ${j.role} p\u00e5 ${j.company} (${j.status})`)
+      lines.push(`${i + 1}. ${j.dateApplied} \u2014 ${t('reportApplicationLine', { role: j.role, company: j.company, status: j.status })}`)
     })
     lines.push('')
-    lines.push(`Totalt antal ans\u00f6kningar: ${reportJobs.length}`)
+    lines.push(t('totalApplicationsReportLabel', { count: reportJobs.length }))
     lines.push('')
-    lines.push('Genererad av Trackson')
+    lines.push(t('generatedByTrackson'))
     return lines.join('\n')
   }
 
   const handleCopyReport = async () => {
     try {
       await navigator.clipboard.writeText(buildReportText())
-      toast.success(lang === 'sv' ? 'Kopierat!' : 'Copied!')
+      toast.success(t('copiedToClipboard'))
     } catch {
-      toast.error(lang === 'sv' ? 'Kunde inte kopiera' : 'Could not copy')
+      toast.error(t('copyFailed'))
     }
   }
 
@@ -256,7 +256,7 @@ export function DashboardTab({ jobs, jobTypes, onNavigateToApplications, onNavig
 
             {/* Summary */}
             <p className="text-sm text-muted-foreground">
-              {lang === 'sv' ? `${reportJobs.length} ansökningar` : `${reportJobs.length} applications`} — {SV_MONTHS_FULL[Number(selectedMonth)]} {selectedYear}
+              {reportJobs.length} {t('applicationsCountUnit')} — {SV_MONTHS_FULL[Number(selectedMonth)]} {selectedYear}
             </p>
 
             {/* Preview */}
@@ -284,7 +284,7 @@ export function DashboardTab({ jobs, jobTypes, onNavigateToApplications, onNavig
         <button
           onClick={() => onNavigateToApplications('All')}
           className={`rounded-2xl border border-border/60 bg-card p-5 flex items-center gap-4 text-left shadow-sm ${clickableCardBase} group`}
-          aria-label="View all applications"
+          aria-label={t('viewAllApplicationsLabel')}
         >
           <div className="p-3 rounded-xl bg-primary/10 text-primary shrink-0 group-hover:bg-primary/15 transition-colors">
             <Briefcase size={20} />
@@ -300,7 +300,7 @@ export function DashboardTab({ jobs, jobTypes, onNavigateToApplications, onNavig
         <button
           onClick={() => onNavigateToApplications('All')}
           className={`rounded-2xl border border-border/60 bg-card p-5 flex items-center gap-4 text-left shadow-sm ${clickableCardBase} group`}
-          aria-label="View high priority applications"
+          aria-label={t('viewHighPriorityLabel')}
         >
           <div className="p-3 rounded-xl bg-rose-500/10 text-rose-600 shrink-0 group-hover:bg-rose-500/15 transition-colors">
             <Zap size={20} />
@@ -316,7 +316,7 @@ export function DashboardTab({ jobs, jobTypes, onNavigateToApplications, onNavig
         <button
           onClick={() => onNavigateToApplications('All')}
           className={`rounded-2xl border border-border/60 bg-card p-5 flex items-center gap-4 text-left shadow-sm ${clickableCardBase} group`}
-          aria-label="View applications this week"
+          aria-label={t('viewThisWeekLabel')}
         >
           <div className="p-3 rounded-xl bg-primary/10 text-primary shrink-0 group-hover:bg-primary/15 transition-colors">
             <CalendarDays size={20} />
@@ -443,7 +443,7 @@ export function DashboardTab({ jobs, jobTypes, onNavigateToApplications, onNavig
       {/* Weekly applications line chart */}
       <Card className="border-border/50 shadow-sm">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">{lang === 'sv' ? 'Ansökningar per vecka' : 'Applications per week'}</CardTitle>
+          <CardTitle className="text-base">{t('applicationsPerWeekChart')}</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={200}>
@@ -452,7 +452,7 @@ export function DashboardTab({ jobs, jobTypes, onNavigateToApplications, onNavig
               <XAxis dataKey="week" tick={{ fontSize: 11 }} className="text-muted-foreground" />
               <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
               <Tooltip
-                formatter={(value: any) => [`${value} ansökningar`, 'Antal']}
+                formatter={(value: any) => [`${value} ${t('applicationsCountUnit')}`, t('chartCountLabel')]}
                 labelFormatter={(label) => `${label}`}
                 contentStyle={{ fontSize: 12 }}
               />

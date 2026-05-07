@@ -316,7 +316,7 @@ export function JobSearchTab({ user, onJobSaved, userProfile }: JobSearchTabProp
               {userProfile && (
                 <Button variant="outline" onClick={handleProfileSearch} disabled={loading} className="gap-2 w-full sm:w-auto">
                   <Search size={15} />
-                  Sök från min profil
+                  {t('searchFromProfile')}
                 </Button>
               )}
               <Button onClick={handleSearch} disabled={loading || !canSearch} className="gap-2 w-full sm:w-auto">
@@ -327,7 +327,7 @@ export function JobSearchTab({ user, onJobSaved, userProfile }: JobSearchTabProp
           </div>
           {!canSearch && (
             <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
-              Välj minst ett filter, ort eller sökord
+              {t('selectFilterFirst')}
             </p>
           )}
           {canSearch && (
@@ -343,7 +343,7 @@ export function JobSearchTab({ user, onJobSaved, userProfile }: JobSearchTabProp
           {/* Header row */}
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              Filtrera resultat
+              {t('filterResultsLabel')}
             </p>
             {hasActiveFilters && (
               <button
@@ -351,7 +351,7 @@ export function JobSearchTab({ user, onJobSaved, userProfile }: JobSearchTabProp
                 className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X size={11} />
-                Rensa filter
+                {t('clearFiltersLabel')}
               </button>
             )}
           </div>
@@ -359,7 +359,7 @@ export function JobSearchTab({ user, onJobSaved, userProfile }: JobSearchTabProp
           {/* Bransch — checkbox grid */}
           <div className="space-y-2">
             <label className="text-xs font-semibold text-foreground/80 uppercase tracking-wide">
-              Bransch
+              {t('industryLabel')}
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-2">
               {INDUSTRIES.map(ind => {
@@ -398,11 +398,11 @@ export function JobSearchTab({ user, onJobSaved, userProfile }: JobSearchTabProp
           {/* Jobbtitel — text filter */}
           <div className="space-y-1.5">
             <label className="text-xs font-semibold text-foreground/80 uppercase tracking-wide">
-              Jobbtitel
+              {t('jobTitleFilterLabel')}
             </label>
             <div className="relative">
               <Input
-                placeholder="t.ex. Frontend, Support, Projektledare"
+                placeholder={t('jobTitleFilterPlaceholder')}
                 value={roleFilter}
                 onChange={e => setRoleFilter(e.target.value)}
                 className="pr-8"
@@ -433,8 +433,8 @@ export function JobSearchTab({ user, onJobSaved, userProfile }: JobSearchTabProp
         <div className="flex items-center justify-between">
           <span className="text-sm font-medium text-foreground">
             {hasActiveFilters
-              ? `${filteredResults.length} av ${results.length} jobb matchar dina filter`
-              : `Visar ${currentPage * 30 + 1}–${Math.min((currentPage + 1) * 30, totalCount)} av ${totalCount.toLocaleString()} jobb`
+              ? t('matchingJobsCount', { count: filteredResults.length, total: results.length })
+              : t('showingJobsRange', { start: currentPage * 30 + 1, end: Math.min((currentPage + 1) * 30, totalCount), total: totalCount.toLocaleString() })
             }
           </span>
           {hasActiveFilters && filteredResults.length === 0 && (
@@ -442,7 +442,7 @@ export function JobSearchTab({ user, onJobSaved, userProfile }: JobSearchTabProp
               onClick={clearFilters}
               className="text-xs text-primary underline-offset-2 hover:underline"
             >
-              Rensa filter
+              {t('clearFiltersLabel')}
             </button>
           )}
         </div>
@@ -460,13 +460,13 @@ export function JobSearchTab({ user, onJobSaved, userProfile }: JobSearchTabProp
       {/* Empty state — filters hide everything */}
       {!loading && results.length > 0 && filteredResults.length === 0 && (
         <div className="rounded-lg border border-border/50 bg-muted/30 px-6 py-8 text-center space-y-2">
-          <p className="text-sm font-medium text-foreground">Inga jobb matchade dina filter</p>
-          <p className="text-xs text-muted-foreground">Prova att ändra bransch eller jobbtitel</p>
+          <p className="text-sm font-medium text-foreground">{t('noMatchingJobs')}</p>
+          <p className="text-xs text-muted-foreground">{t('tryChangingFilters')}</p>
           <button
             onClick={clearFilters}
             className="mt-2 text-xs text-primary underline-offset-2 hover:underline"
           >
-            Rensa filter
+            {t('clearFiltersLabel')}
           </button>
         </div>
       )}
@@ -557,13 +557,13 @@ export function JobSearchTab({ user, onJobSaved, userProfile }: JobSearchTabProp
       {hasSearched && !loading && totalCount > 30 && (
         <div className="flex items-center justify-between pt-4">
           <Button variant="outline" disabled={currentPage === 0} onClick={() => setCurrentPage(p => p - 1)}>
-            ← Föregående
+            {t('previousPage')}
           </Button>
           <span className="text-sm text-muted-foreground">
-            Sida {currentPage + 1} — {currentPage * 30 + 1}–{Math.min((currentPage + 1) * 30, totalCount)} av {totalCount.toLocaleString()}
+            {t('paginationInfo', { page: currentPage + 1, start: currentPage * 30 + 1, end: Math.min((currentPage + 1) * 30, totalCount), total: totalCount.toLocaleString() })}
           </span>
           <Button variant="outline" disabled={(currentPage + 1) * 30 >= totalCount} onClick={() => setCurrentPage(p => p + 1)}>
-            Nästa →
+            {t('nextPage')}
           </Button>
         </div>
       )}
