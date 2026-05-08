@@ -2,6 +2,7 @@ import { Card, CardHeader, CardTitle, CardContent, Badge, EmptyState } from '@bl
 import { FileText, MessageSquare, Clock } from 'lucide-react'
 import { Job } from '../../types/job'
 import { formatDate } from '../../lib/utils/date'
+import { getStatusLabel } from '../../lib/utils'
 import { useLanguage } from '../../lib/LanguageContext'
 
 interface NotesTabProps {
@@ -9,7 +10,7 @@ interface NotesTabProps {
 }
 
 export function NotesTab({ jobs }: NotesTabProps) {
-  const { t } = useLanguage()
+  const { t, lang } = useLanguage()
   const jobsWithNotes = jobs.filter(j => j.interviewNotes || j.notes)
 
   return (
@@ -35,7 +36,7 @@ export function NotesTab({ jobs }: NotesTabProps) {
                     <span className="flex items-center gap-1"><Clock size={12} /> {formatDate(job.dateApplied)}</span>
                   </div>
                 </div>
-                <Badge variant="secondary">{job.status}</Badge>
+                <Badge variant="secondary">{getStatusLabel(job.status, lang)}</Badge>
               </CardHeader>
               <CardContent className="space-y-6 pt-4">
                 {job.interviewNotes && (

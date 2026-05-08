@@ -4,7 +4,8 @@
       "Bash(python3 *)",
       "Bash(grep -n \">[A-ZÅÄÖ][a-zA-ZåäöÅÄÖ ]\\\\{5,\\\\}<\" \"C:/Users/Manga/OneDrive/Dokument/GitHub/Traxx/src/features/documents/DocumentsTab.tsx\")",
       "Bash(grep -n \">[A-ZÅÄÖ][a-zA-ZåäöÅÄÖ ]\\\\{5,\\\\}<\" \"C:/Users/Manga/OneDrive/Dokument/GitHub/Traxx/src/features/followups/FollowUpsTab.tsx\")",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(grep -v \"//.*status\")"
     ]
   }
 }

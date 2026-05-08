@@ -2,6 +2,7 @@ import { Card, CardHeader, CardTitle, CardContent, Button, Badge, EmptyState } f
 import { CheckCircle, XCircle, TrendingUp, Edit2, Calendar, Clock, AlertCircle, MessageCircle } from 'lucide-react'
 import { Job, JobStatus } from '../../types/job'
 import { getFollowUpStatus, formatDate } from '../../lib/utils/date'
+import { getStatusLabel } from '../../lib/utils'
 import { supabase } from '../../lib/supabase'
 import { toast } from '@blinkdotnew/ui'
 import { useLanguage } from '../../lib/LanguageContext'
@@ -13,7 +14,7 @@ interface FollowUpsTabProps {
 }
 
 export function FollowUpsTab({ jobs, onRefresh, onEdit }: FollowUpsTabProps) {
-  const { t } = useLanguage()
+  const { t, lang } = useLanguage()
   const followUpJobs = jobs.filter(j => j.followUpDate).sort((a, b) => a.followUpDate.localeCompare(b.followUpDate))
   
   const overdue = followUpJobs.filter(j => getFollowUpStatus(j.followUpDate) === 'overdue')
@@ -57,7 +58,7 @@ export function FollowUpsTab({ jobs, onRefresh, onEdit }: FollowUpsTabProps) {
             <div className="space-y-0.5 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="font-bold text-base text-foreground">{job.company}</h3>
-                <Badge variant="secondary" className="h-5 text-[10px] uppercase font-bold shrink-0">{job.status}</Badge>
+                <Badge variant="secondary" className="h-5 text-[10px] uppercase font-bold shrink-0">{getStatusLabel(job.status, lang)}</Badge>
                 {job.coverLetterStatus === 'Sent' && <Badge variant="outline" className="h-5 text-[10px] border-emerald-200 text-emerald-700 bg-emerald-50 shrink-0">{t('clSentBadge')}</Badge>}
               </div>
               <p className="text-sm font-medium text-muted-foreground truncate">{job.role}</p>

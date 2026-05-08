@@ -4,6 +4,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { Briefcase, Clock, CalendarDays, Zap, ArrowRight, Sparkles, MapPin, Building2, BookmarkPlus, Check, FileText, Copy, Download } from 'lucide-react'
 import { Job, JobStatus, JobPriority } from '../../types/job'
 import { getFollowUpStatus } from '../../lib/utils/date'
+import { getStatusLabel } from '../../lib/utils'
 import { useLanguage } from '../../lib/LanguageContext'
 import { calculateMatchScore, PlatsbankenJob, UserProfile } from '../../lib/matchScore'
 import { supabase } from '../../lib/supabase'
@@ -46,7 +47,7 @@ export function DashboardTab({ jobs, jobTypes, onNavigateToApplications, onNavig
       t('jobSearchActivitiesLabel'),
     ]
     reportJobs.forEach((j, i) => {
-      lines.push(`${i + 1}. ${j.dateApplied} \u2014 ${t('reportApplicationLine', { role: j.role, company: j.company, status: j.status })}`)
+      lines.push(`${i + 1}. ${j.dateApplied} \u2014 ${t('reportApplicationLine', { role: j.role, company: j.company, status: getStatusLabel(j.status, lang) })}`)
     })
     lines.push('')
     lines.push(t('totalApplicationsReportLabel', { count: reportJobs.length }))
@@ -389,7 +390,7 @@ export function DashboardTab({ jobs, jobTypes, onNavigateToApplications, onNavig
                       <span className="text-xs text-muted-foreground line-clamp-1">{job.role}</span>
                     </div>
                     <div className="flex items-center gap-2 flex-wrap shrink-0">
-                      <Badge variant="outline" className="text-[9px] h-4 uppercase font-bold px-1.5">{job.status}</Badge>
+                      <Badge variant="outline" className="text-[9px] h-4 uppercase font-bold px-1.5">{getStatusLabel(job.status, lang)}</Badge>
                       {(() => {
                         const p = (job.priority || 'Medium') as JobPriority
                         const cls = p === 'High' ? 'text-rose-600' : p === 'Medium' ? 'text-amber-600' : 'text-sky-600'
