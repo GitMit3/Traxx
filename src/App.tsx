@@ -504,7 +504,7 @@ function App() {
                   <div className="mb-6 rounded-2xl border border-primary/20 bg-primary/5 p-6 space-y-4 animate-in fade-in duration-500">
                     <div className="space-y-1">
                       <h2 className="text-xl font-bold text-foreground">
-                        {lang === 'sv' ? '👋 Välkommen till Trackson!' : '👋 Welcome to Trackson!'}
+                        {lang === 'sv' ? '👋 Välkommen till Traxx!' : '👋 Welcome to Traxx!'}
                       </h2>
                       <p className="text-sm text-muted-foreground">
                         {lang === 'sv'

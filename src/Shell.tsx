@@ -25,7 +25,7 @@ interface ShellProps {
   children: React.ReactNode
 }
 
-export function Shell({ sidebar, appName = 'App', children }: ShellProps) {
+export function Shell({ sidebar, appName = 'Traxx', children }: ShellProps) {
   return (
     <AppShell>
       {/* Sidebar — hidden on mobile, always visible on md+ */}

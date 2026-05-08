@@ -92,7 +92,7 @@ function HeroVisual() {
               <LogoMark size={15} />
             </div>
             <div>
-              <span className="font-bold text-sm text-foreground">Trackson</span>
+              <span className="font-bold text-sm text-foreground">Traxx</span>
               <span className="ml-2 text-[10px] text-muted-foreground font-medium">My Applications</span>
             </div>
           </div>
@@ -235,7 +235,7 @@ export function LandingPage({ onLogin, onSignup }: LandingPageProps) {
             <div className="p-2 bg-primary rounded-xl text-primary-foreground shadow-md shadow-primary/25">
               <LogoMark size={20} />
             </div>
-            <span className="text-xl font-bold tracking-tight">Trackson</span>
+            <span className="text-xl font-bold tracking-tight">Traxx</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Button variant="ghost" size="sm" onClick={onLogin} className="font-medium text-sm px-3 py-1.5">
@@ -410,14 +410,14 @@ export function LandingPage({ onLogin, onSignup }: LandingPageProps) {
                 <LogoMark size={16} />
               </div>
               <div>
-                <span className="font-bold text-sm text-foreground">Trackson</span>
+                <span className="font-bold text-sm text-foreground">Traxx</span>
                 <p className="text-[11px] text-muted-foreground leading-none mt-0.5">{t('landingFooterTagline')}</p>
               </div>
             </div>
             <div />
           </div>
           <div className="mt-6 pt-6 border-t border-border/20 text-center">
-            <p className="text-[11px] text-muted-foreground/60">© {new Date().getFullYear()} Trackson</p>
+            <p className="text-[11px] text-muted-foreground/60">© {new Date().getFullYear()} Traxx</p>
           </div>
         </div>
       </footer>

@@ -66,7 +66,7 @@ export function AuthScreen({ initialMode = 'login', onBack }: AuthScreenProps) {
             className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors group"
           >
             <ArrowLeft size={15} className="group-hover:-translate-x-0.5 transition-transform" />
-            Trackson
+            Traxx
           </button>
         )}
 

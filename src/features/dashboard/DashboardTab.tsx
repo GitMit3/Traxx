@@ -52,7 +52,7 @@ export function DashboardTab({ jobs, jobTypes, onNavigateToApplications, onNavig
     lines.push('')
     lines.push(t('totalApplicationsReportLabel', { count: reportJobs.length }))
     lines.push('')
-    lines.push(t('generatedByTrackson'))
+    lines.push(t('generatedByTraxx'))
     return lines.join('\n')
   }
 

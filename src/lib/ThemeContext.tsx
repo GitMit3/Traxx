@@ -10,8 +10,8 @@ interface ThemeContextValue {
   setColorMode: (mode: ColorMode) => void
 }
 
-const THEME_STORAGE_KEY = 'trackify_theme'
-const COLOR_MODE_STORAGE_KEY = 'trackify_colormode'
+const THEME_STORAGE_KEY = 'traxx_theme'
+const COLOR_MODE_STORAGE_KEY = 'traxx_colormode'
 
 interface Palette {
   primary: string

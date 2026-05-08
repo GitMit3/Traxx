@@ -9,6 +9,15 @@ import './index.css'
 
 const queryClient = new QueryClient()
 
+try {
+  const oldLang = localStorage.getItem('jobtrack_language')
+  if (oldLang) { localStorage.setItem('traxx_language', oldLang); localStorage.removeItem('jobtrack_language') }
+  const oldTheme = localStorage.getItem('trackify_theme')
+  if (oldTheme) { localStorage.setItem('traxx_theme', oldTheme); localStorage.removeItem('trackify_theme') }
+  const oldMode = localStorage.getItem('trackify_colormode')
+  if (oldMode) { localStorage.setItem('traxx_colormode', oldMode); localStorage.removeItem('trackify_colormode') }
+} catch {}
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>

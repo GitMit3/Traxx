@@ -44,12 +44,12 @@
   }
 }
 
-/* ── Pathly App palette — Forest Green default ─────────────────────────────────
+/* ── Traxx palette — Forest Green default ─────────────────────────────────────
    ThemeContext.tsx overrides these via JS (applyTheme) whenever the user
    changes theme. These CSS vars serve as the *initial* paint before JS runs.
    ──────────────────────────────────────────────────────────────────────────── */
 :root {
-  /* Forest Green — default Pathly palette */
+  /* Forest Green — default Traxx palette */
   --background: 150 25% 97%;
   --foreground: 155 60% 10%;
   --card: 0 0% 100%;
