@@ -18,14 +18,9 @@ interface SettingsTabProps {
 }
 
 const THEME_SWATCHES: { key: ThemeOption; color: string; labelKey: string; descKey: string }[] = [
-  { key: 'forest',   color: 'bg-[hsl(155,60%,22%)]',  labelKey: 'themeDefault',  descKey: 'themeDescForest' },
-  { key: 'ocean',    color: 'bg-[hsl(213,78%,32%)]',  labelKey: 'themeBlue',     descKey: 'themeDescOcean' },
-  { key: 'purple',   color: 'bg-[hsl(268,55%,40%)]',  labelKey: 'themePurple',   descKey: 'themeDescPurple' },
-  { key: 'slate',    color: 'bg-[hsl(215,28%,22%)]',  labelKey: 'themeSlate',    descKey: 'themeDescSlate' },
-  { key: 'sand',     color: 'bg-[hsl(28,55%,35%)]',   labelKey: 'themeSand',     descKey: 'themeDescSand' },
   { key: 'midnight', color: 'bg-[hsl(221,83%,38%)]',  labelKey: 'themeMidnight', descKey: 'themeDescMidnight' },
-  { key: 'rose',     color: 'bg-[hsl(330,65%,40%)]',  labelKey: 'themeRose',     descKey: 'themeDescRose' },
-  { key: 'nordic',   color: 'bg-[hsl(215,14%,28%)]',  labelKey: 'themeNordic',   descKey: 'themeDescNordic' },
+  { key: 'forest',   color: 'bg-[hsl(155,60%,22%)]',  labelKey: 'themeForest',   descKey: 'themeDescForest' },
+  { key: 'slate',    color: 'bg-[hsl(215,28%,22%)]',  labelKey: 'themeSlate',    descKey: 'themeDescSlate' },
 ]
 
 const COLOR_MODES: { key: ColorMode; labelKey: string }[] = [
@@ -189,7 +184,7 @@ export function SettingsTab({ user, jobTypes, jobs, onRefresh, onLogout, lang, o
           <PageDescription>{t('themeSettingsDesc')}</PageDescription>
         </CardHeader>
         <CardContent className="space-y-5">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+          <div className="grid grid-cols-3 gap-3">
             {THEME_SWATCHES.map(({ key, color, labelKey, descKey }) => (
               <button
                 key={key}

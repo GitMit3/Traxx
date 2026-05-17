@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Card, Input, Select, SelectTrigger, SelectContent, SelectItem, SelectValue, Badge, EmptyState } from '@blinkdotnew/ui'
+import { Card, Input, Select, SelectTrigger, SelectContent, SelectItem, SelectValue, Badge, EmptyState, Dialog, DialogContent, DialogHeader, DialogTitle, Button } from '@blinkdotnew/ui'
 import { Search, SortDesc, SortAsc, Filter, Edit2, Trash2, Clock, CheckCircle, XCircle, Calendar, MessageSquare, Briefcase, TrendingUp, ExternalLink, BookmarkPlus } from 'lucide-react'
 import { Job, JobStatus, CoverLetterStatus, JobPriority } from '../../types/job'
 import { getFollowUpStatus } from '../../lib/utils/date'
@@ -23,11 +23,12 @@ interface MobileJobCardProps {
   onEdit: (job: Job) => void
   onDelete: (id: string) => void
   onMarkApplied: (id: string) => void
+  onView: (job: Job) => void
   t: (key: any) => string
   lang: string
 }
 
-function MobileJobCard({ job, onEdit, onDelete, onMarkApplied, t, lang }: MobileJobCardProps) {
+function MobileJobCard({ job, onEdit, onDelete, onMarkApplied, onView, t, lang }: MobileJobCardProps) {
   const priority = (job.priority || 'Medium') as JobPriority
 
   const statusVariants: Record<JobStatus, 'default' | 'secondary' | 'outline' | 'destructive'> = {
@@ -59,17 +60,15 @@ function MobileJobCard({ job, onEdit, onDelete, onMarkApplied, t, lang }: Mobile
   const isSoon    = followUpStatus === 'soon'
 
   return (
-    <div className="bg-background border border-border/60 rounded-2xl p-4 shadow-sm space-y-3 active:scale-[0.99] transition-transform">
+    <div
+      className="bg-background border border-border/60 rounded-2xl p-4 shadow-sm space-y-3 active:scale-[0.99] transition-transform cursor-pointer"
+      onClick={() => onView(job)}
+    >
       {/* Top row: company + job type */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <p className="font-bold text-primary truncate text-base leading-snug flex items-center gap-1.5">
             {job.company}
-            {job.jobUrl && (
-              <a href={job.jobUrl} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-muted-foreground hover:text-primary transition-colors shrink-0" title="View job listing">
-                <ExternalLink size={12} />
-              </a>
-            )}
           </p>
           {job.jobType && (
             <p className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium mt-0.5">{job.jobType}</p>
@@ -151,11 +150,12 @@ interface DesktopJobRowProps {
   onEdit: (job: Job) => void
   onDelete: (id: string) => void
   onMarkApplied: (id: string) => void
+  onView: (job: Job) => void
   t: (key: any) => string
   lang: string
 }
 
-function DesktopJobRow({ job, onEdit, onDelete, onMarkApplied, t, lang }: DesktopJobRowProps) {
+function DesktopJobRow({ job, onEdit, onDelete, onMarkApplied, onView, t, lang }: DesktopJobRowProps) {
   const priority = (job.priority || 'Medium') as JobPriority
 
   const statusVariants: Record<JobStatus, 'default' | 'secondary' | 'outline' | 'destructive'> = {
@@ -181,7 +181,7 @@ function DesktopJobRow({ job, onEdit, onDelete, onMarkApplied, t, lang }: Deskto
   const isSoon    = followUpStatus === 'soon'
 
   return (
-    <tr className="border-b border-border/40 last:border-0 hover:bg-muted/30 transition-colors">
+    <tr className="border-b border-border/40 last:border-0 hover:bg-muted/30 transition-colors cursor-pointer" onClick={() => onView(job)}>
       {/* Company */}
       <td className="px-4 py-3 align-middle">
         <div className="flex flex-col">
@@ -272,6 +272,14 @@ export function ApplicationsTab({ jobs, jobTypes, onEdit, onDelete, onMarkApplie
   const [filterType, setFilterType]     = useState<string | 'All'>('All')
   const [filterStatus, setFilterStatus] = useState<JobStatus | 'All'>('All')
   const [filterCL, setFilterCL]         = useState<CoverLetterStatus | 'All'>('All')
+  const [viewingJob, setViewingJob]     = useState<Job | null>(null)
+
+  // Derived values for the detail dialog
+  const vPriority       = ((viewingJob?.priority) || 'Medium') as JobPriority
+  const vFollowUpStatus = viewingJob?.followUpDate ? getFollowUpStatus(viewingJob.followUpDate) : null
+  const vIsOverdue      = vFollowUpStatus === 'overdue'
+  const vIsToday        = vFollowUpStatus === 'today'
+  const vIsSoon         = vFollowUpStatus === 'soon'
 
   // Consume navigation filter from dashboard cards
   useEffect(() => {
@@ -506,6 +514,7 @@ export function ApplicationsTab({ jobs, jobTypes, onEdit, onDelete, onMarkApplie
                 onEdit={onEdit}
                 onDelete={onDelete}
                 onMarkApplied={onMarkApplied}
+                onView={setViewingJob}
                 t={t}
                 lang={lang}
               />
@@ -534,6 +543,7 @@ export function ApplicationsTab({ jobs, jobTypes, onEdit, onDelete, onMarkApplie
                       onEdit={onEdit}
                       onDelete={onDelete}
                       onMarkApplied={onMarkApplied}
+                      onView={setViewingJob}
                       t={t}
                       lang={lang}
                     />
@@ -544,6 +554,102 @@ export function ApplicationsTab({ jobs, jobTypes, onEdit, onDelete, onMarkApplie
           </div>
         </>
       )}
+
+      {/* ── Job detail dialog ─────────────────────────────────────────────── */}
+      <Dialog open={!!viewingJob} onOpenChange={open => !open && setViewingJob(null)}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold leading-snug">{viewingJob?.company}</DialogTitle>
+            <p className="text-base text-muted-foreground mt-0.5">{viewingJob?.role}</p>
+          </DialogHeader>
+
+          {viewingJob && (
+            <div className="space-y-4 mt-1">
+
+              {/* Status + Priority */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge variant={
+                  viewingJob.status === 'Interviewing' ? 'default'
+                  : viewingJob.status === 'Rejected' ? 'destructive'
+                  : viewingJob.status === 'Offer' ? 'outline'
+                  : 'secondary'
+                }>
+                  {getStatusLabel(viewingJob.status, lang)}
+                </Badge>
+                <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[11px] font-semibold ${
+                  vPriority === 'High' ? 'bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800/50'
+                  : vPriority === 'Low' ? 'bg-sky-100 text-sky-700 border-sky-200 dark:bg-sky-950/40 dark:text-sky-400 dark:border-sky-800/50'
+                  : 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/50'
+                }`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${vPriority === 'High' ? 'bg-rose-500' : vPriority === 'Low' ? 'bg-sky-500' : 'bg-amber-500'}`} />
+                  {t(`priority${vPriority}` as any)}
+                </span>
+              </div>
+
+              {/* Dates */}
+              <div className="grid grid-cols-2 gap-3">
+                {viewingJob.dateApplied && (
+                  <div className="space-y-0.5">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t('dateApplied')}</p>
+                    <p className="text-sm text-foreground">{viewingJob.dateApplied}</p>
+                  </div>
+                )}
+                {viewingJob.followUpDate && (
+                  <div className="space-y-0.5">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t('followUpDate')}</p>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <p className={`text-sm ${vIsOverdue ? 'text-destructive font-semibold' : 'text-foreground'}`}>{viewingJob.followUpDate}</p>
+                      {vIsOverdue && <Badge variant="destructive" className="px-1.5 py-0 h-4 text-[9px]">{t('overdue')}</Badge>}
+                      {vIsToday   && <Badge className="px-1.5 py-0 h-4 text-[9px]">{t('todayBadge')}</Badge>}
+                      {vIsSoon    && <Badge variant="outline" className="px-1.5 py-0 h-4 text-[9px] border-amber-500 text-amber-600 font-bold">{t('soon')}</Badge>}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Job URL */}
+              {viewingJob.jobUrl && (
+                <a href={viewingJob.jobUrl} target="_blank" rel="noopener noreferrer">
+                  <Button variant="outline" className="gap-2 h-9 text-sm w-full sm:w-auto">
+                    <ExternalLink size={14} />
+                    {t('openOriginal')}
+                  </Button>
+                </a>
+              )}
+
+              {/* Interview Notes */}
+              {viewingJob.interviewNotes && (
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t('interviewNotes')}</p>
+                  <p className="text-sm text-foreground whitespace-pre-wrap bg-muted/40 rounded-lg p-3 border border-border/40">{viewingJob.interviewNotes}</p>
+                </div>
+              )}
+
+              {/* General Notes */}
+              {viewingJob.notes && (
+                <div className="space-y-1">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t('generalNotes')}</p>
+                  <p className="text-sm text-foreground whitespace-pre-wrap bg-muted/40 rounded-lg p-3 border border-border/40">{viewingJob.notes}</p>
+                </div>
+              )}
+
+              {/* Edit action */}
+              <div className="flex justify-end pt-2 border-t border-border/40">
+                <Button
+                  variant="outline"
+                  className="gap-2"
+                  onClick={() => { setViewingJob(null); onEdit(viewingJob) }}
+                >
+                  <Edit2 size={14} />
+                  {t('editLabel')}
+                </Button>
+              </div>
+
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
     </div>
   )
 }

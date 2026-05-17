@@ -6,7 +6,7 @@ import {
 import { Search, ExternalLink, BookmarkPlus, Check, MapPin, Calendar, Building2, ChevronRight, X } from 'lucide-react'
 import { supabase } from '../../lib/supabase'
 import { useLanguage } from '../../lib/LanguageContext'
-import { calculateMatchScore, PlatsbankenJob, UserProfile } from '../../lib/matchScore'
+import { PlatsbankenJob, UserProfile } from '../../lib/matchScore'
 import { toast } from '@blinkdotnew/ui'
 import { SWEDISH_LOCATIONS } from '../../lib/constants'
 
@@ -203,7 +203,6 @@ export function JobSearchTab({ user, onJobSaved, userProfile }: JobSearchTabProp
   const handleSave = async (job: PlatsbankenJob) => {
     setSavingId(job.id)
     try {
-      const match = userProfile ? calculateMatchScore(job, userProfile) : { score: 0, reasons: [] }
       const today = new Date().toISOString().split('T')[0]
       const { error } = await supabase.from('jobs').insert({
         user_id:             user.id,
@@ -212,8 +211,6 @@ export function JobSearchTab({ user, onJobSaved, userProfile }: JobSearchTabProp
         status:              'Saved',
         job_type:            job.occupation || '',
         date_applied:        today,
-        next_step:           '',
-        match_score:         match.score,
         priority:            'Medium',
         cover_letter_status: 'Not started',
         follow_up_date:      '',
@@ -247,16 +244,6 @@ export function JobSearchTab({ user, onJobSaved, userProfile }: JobSearchTabProp
 
   // ── Misc ────────────────────────────────────────────────────────────────────
 
-  const getScoreBadgeClass = (score: number) =>
-    score >= 70
-      ? 'bg-emerald-100 text-emerald-700 border-emerald-200'
-      : score >= 40
-      ? 'bg-amber-100 text-amber-700 border-amber-200'
-      : 'bg-secondary text-muted-foreground border-border'
-
-  const selectedMatch = selectedJob && userProfile
-    ? calculateMatchScore(selectedJob, userProfile)
-    : null
 
   // ── Render ──────────────────────────────────────────────────────────────────
 
@@ -597,23 +584,6 @@ export function JobSearchTab({ user, onJobSaved, userProfile }: JobSearchTabProp
                   </span>
                 )}
               </div>
-
-              {/* Match score */}
-              {selectedMatch && selectedMatch.score > 0 && (
-                <div className="flex items-center gap-3">
-                  <Badge
-                    variant="outline"
-                    className={`text-sm font-semibold px-3 py-1 ${getScoreBadgeClass(selectedMatch.score)}`}
-                  >
-                    {selectedMatch.score}% {t('matchLabel')}
-                  </Badge>
-                  {selectedMatch.reasons.length > 0 && (
-                    <span className="text-xs text-muted-foreground">
-                      {selectedMatch.reasons.slice(0, 2).join(' · ')}
-                    </span>
-                  )}
-                </div>
-              )}
 
               {/* Full description */}
               <div className="rounded-lg bg-muted/40 p-4 text-sm leading-relaxed whitespace-pre-wrap border border-border/40">

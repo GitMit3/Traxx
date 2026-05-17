@@ -49,43 +49,43 @@
    changes theme. These CSS vars serve as the *initial* paint before JS runs.
    ──────────────────────────────────────────────────────────────────────────── */
 :root {
-  /* Forest Green — default Traxx palette */
-  --background: 150 25% 97%;
-  --foreground: 155 60% 10%;
+  /* Midnight Blue — default Traxx palette */
+  --background: 220 30% 97%;
+  --foreground: 221 50% 10%;
   --card: 0 0% 100%;
-  --card-foreground: 155 60% 10%;
+  --card-foreground: 221 50% 10%;
   --popover: 0 0% 100%;
-  --popover-foreground: 155 60% 10%;
-  --primary: 155 60% 22%;
+  --popover-foreground: 221 50% 10%;
+  --primary: 221 83% 38%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 150 20% 91%;
-  --secondary-foreground: 155 60% 10%;
-  --muted: 150 20% 91%;
-  --muted-foreground: 155 20% 38%;
-  --accent: 28 85% 55%;
+  --secondary: 220 25% 91%;
+  --secondary-foreground: 221 50% 10%;
+  --muted: 220 25% 91%;
+  --muted-foreground: 220 20% 40%;
+  --accent: 199 89% 48%;
   --accent-foreground: 0 0% 100%;
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
-  --border: 150 18% 88%;
-  --input: 150 18% 88%;
-  --ring: 155 60% 22%;
+  --border: 220 20% 87%;
+  --input: 220 20% 87%;
+  --ring: 221 83% 38%;
 
   /* Charts */
-  --chart-1: 155 60% 28%;
-  --chart-2: 28 85% 55%;
-  --chart-3: 47 96% 53%;
-  --chart-4: 213 78% 45%;
-  --chart-5: 268 55% 50%;
+  --chart-1: 221 83% 38%;
+  --chart-2: 199 89% 48%;
+  --chart-3: 251 60% 52%;
+  --chart-4: 171 65% 38%;
+  --chart-5: 41 90% 55%;
 
   /* Sidebar */
-  --sidebar: 150 22% 94%;
-  --sidebar-foreground: 155 60% 10%;
-  --sidebar-primary: 155 60% 22%;
+  --sidebar: 220 28% 94%;
+  --sidebar-foreground: 221 50% 10%;
+  --sidebar-primary: 221 83% 38%;
   --sidebar-primary-foreground: 0 0% 100%;
-  --sidebar-accent: 28 85% 55%;
+  --sidebar-accent: 199 89% 48%;
   --sidebar-accent-foreground: 0 0% 100%;
-  --sidebar-border: 150 18% 88%;
-  --sidebar-ring: 155 60% 22%;
+  --sidebar-border: 220 20% 87%;
+  --sidebar-ring: 221 83% 38%;
 
   /* Fonts */
   --font-sans: DM Sans, sans-serif;

@@ -6,7 +6,7 @@ import { Job, JobStatus, JobPriority } from '../../types/job'
 import { getFollowUpStatus } from '../../lib/utils/date'
 import { getStatusLabel } from '../../lib/utils'
 import { useLanguage } from '../../lib/LanguageContext'
-import { calculateMatchScore, PlatsbankenJob, UserProfile } from '../../lib/matchScore'
+import { PlatsbankenJob, UserProfile } from '../../lib/matchScore'
 import { supabase } from '../../lib/supabase'
 
 interface DashboardTabProps {
@@ -76,7 +76,7 @@ export function DashboardTab({ jobs, jobTypes, onNavigateToApplications, onNavig
   }
 
   // ── Suggested jobs state ──────────────────────────────────────────────────
-  const [suggestedJobs, setSuggestedJobs] = useState<(PlatsbankenJob & { score: number })[]>([])
+  const [suggestedJobs, setSuggestedJobs] = useState<PlatsbankenJob[]>([])
   const [suggestLoading, setSuggestLoading] = useState(false)
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set())
   const [savingId, setSavingId] = useState<string | null>(null)
@@ -108,11 +108,7 @@ export function DashboardTab({ jobs, jobTypes, onNavigateToApplications, onNavig
           sourceUrl: hit.webpage_url || hit.application_details?.url || '',
           occupation: hit.occupation?.label || '',
         }))
-        const scored = mapped
-          .map(job => ({ ...job, score: userProfile ? calculateMatchScore(job, userProfile).score : 0 }))
-          .sort((a, b) => b.score - a.score)
-          .slice(0, 3)
-        if (!cancelled) setSuggestedJobs(scored)
+        if (!cancelled) setSuggestedJobs(mapped.slice(0, 3))
       } catch {
         // silently ignore — suggestions are best-effort
       } finally {
@@ -123,7 +119,7 @@ export function DashboardTab({ jobs, jobTypes, onNavigateToApplications, onNavig
     return () => { cancelled = true }
   }, [userProfile?.preferredTitles, userProfile?.preferredLocations])
 
-  const handleSaveSuggested = async (job: PlatsbankenJob & { score: number }) => {
+  const handleSaveSuggested = async (job: PlatsbankenJob) => {
     if (!user?.id) return
     setSavingId(job.id)
     try {
@@ -135,13 +131,12 @@ export function DashboardTab({ jobs, jobTypes, onNavigateToApplications, onNavig
         status: 'Applied',
         job_type: job.occupation || '',
         date_applied: today,
-        next_step: '',
-        match_score: job.score,
         priority: 'Medium',
         cover_letter_status: 'Not started',
         follow_up_date: '',
         interview_notes: '',
-        notes: job.sourceUrl ? `Source: ${job.sourceUrl}` : '',
+        notes: '',
+        job_url: job.sourceUrl || '',
       })
       if (error) throw error
       setSavedIds(prev => new Set(prev).add(job.id))
@@ -205,12 +200,6 @@ export function DashboardTab({ jobs, jobTypes, onNavigateToApplications, onNavig
 
   const clickableCardBase = "cursor-pointer transition-all duration-200 hover:shadow-lg hover:shadow-primary/8 hover:-translate-y-0.5 hover:border-primary/40 active:scale-[0.98] active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:ring-offset-1"
 
-  const getScoreBadgeClass = (score: number) =>
-    score >= 70
-      ? 'bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400'
-      : score >= 40
-      ? 'bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400'
-      : 'bg-secondary text-muted-foreground border-border'
 
   return (
     <div className="space-y-5 sm:space-y-8 animate-in fade-in duration-500">
@@ -514,11 +503,6 @@ export function DashboardTab({ jobs, jobTypes, onNavigateToApplications, onNavig
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      {job.score > 0 && (
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${getScoreBadgeClass(job.score)}`}>
-                          {job.score}%
-                        </span>
-                      )}
                       <Button
                         size="sm"
                         disabled={isSaved || isSaving || !user}

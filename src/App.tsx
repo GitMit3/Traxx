@@ -232,7 +232,6 @@ function App() {
           status: editingJob.status,
           job_type: editingJob.jobType,
           date_applied: editingJob.dateApplied,
-          next_step: editingJob.nextStep,
           match_score: editingJob.matchScore,
           priority: editingJob.priority || 'Medium',
           cover_letter_status: editingJob.coverLetterStatus,
@@ -345,11 +344,9 @@ function App() {
           aria-label="Go to Dashboard"
         >
           <div className="p-2 bg-primary rounded-xl text-primary-foreground shadow-md shadow-primary/25 group-hover:scale-105 transition-transform duration-150 shrink-0">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M4 16 L10 16 L14 9 L20 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <circle cx="4" cy="16" r="2" fill="currentColor"/>
-              <circle cx="14" cy="9" r="2" fill="currentColor"/>
-              <circle cx="20" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.75" fill="none" opacity="0.65"/>
+            <svg width="18" height="18" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="14.5" y="14" width="3" height="16" rx="1.5" fill="currentColor"/>
+              <path d="M4 18 C4 18 8 10 14.5 15.5 L17.5 15.5 C24 10 28 18 28 18" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
             </svg>
           </div>
           <div className="text-left">
@@ -473,11 +470,9 @@ function App() {
             onClick={() => setActiveTab('dashboard')}
           >
             <div className="p-1.5 bg-primary rounded-lg text-primary-foreground">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 16 L10 16 L14 9 L20 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <circle cx="4" cy="16" r="2" fill="currentColor"/>
-                <circle cx="14" cy="9" r="2" fill="currentColor"/>
-                <circle cx="20" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.75" fill="none" opacity="0.65"/>
+              <svg width="16" height="16" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="14.5" y="14" width="3" height="16" rx="1.5" fill="currentColor"/>
+                <path d="M4 18 C4 18 8 10 14.5 15.5 L17.5 15.5 C24 10 28 18 28 18" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
               </svg>
             </div>
             <span className="font-bold text-sm tracking-tight">{t('appName')}</span>
@@ -672,10 +667,6 @@ function App() {
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{t('followUpDate')}</label>
                 <Input type="date" value={editingJob.followUpDate} onChange={e => setEditingJob({ ...editingJob, followUpDate: e.target.value })} className="h-10" />
-              </div>
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{t('nextStep')}</label>
-                <Input value={editingJob.nextStep} onChange={e => setEditingJob({ ...editingJob, nextStep: e.target.value })} className="h-10" />
               </div>
               <div className="space-y-1.5">
                 <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{t('priority')}</label>

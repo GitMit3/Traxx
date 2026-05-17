@@ -24,8 +24,6 @@ export function AddJobTab({ user, jobTypes, onRefresh }: AddJobTabProps) {
     status: 'Applied' as JobStatus,
     jobType: '',
     dateApplied: new Date().toISOString().split('T')[0],
-    nextStep: '',
-    matchScore: 0,
     priority: 'Medium' as JobPriority,
     coverLetterStatus: 'Not started' as const,
     followUpDate: '',
@@ -76,8 +74,6 @@ export function AddJobTab({ user, jobTypes, onRefresh }: AddJobTabProps) {
         status: formData.status,
         job_type: formData.jobType,
         date_applied: formData.dateApplied,
-        next_step: formData.nextStep,
-        match_score: formData.matchScore,
         priority: formData.priority,
         cover_letter_status: formData.coverLetterStatus,
         follow_up_date: formData.followUpDate,
@@ -218,14 +214,6 @@ export function AddJobTab({ user, jobTypes, onRefresh }: AddJobTabProps) {
                     type="date"
                     value={formData.followUpDate}
                     onChange={e => setFormData({ ...formData, followUpDate: e.target.value })}
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-muted-foreground uppercase">{t('nextStep')}</label>
-                  <Input
-                    placeholder={t('nextStepPlaceholder')}
-                    value={formData.nextStep}
-                    onChange={e => setFormData({ ...formData, nextStep: e.target.value })}
                   />
                 </div>
                 <div className="space-y-1">
