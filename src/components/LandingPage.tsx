@@ -8,9 +8,9 @@ interface LandingPageProps {
 
 function LogoMark({ size = 24 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="14.5" y="14" width="3" height="16" rx="1.5" fill="currentColor"/>
-      <path d="M4 18 C4 18 8 10 14.5 15.5 L17.5 15.5 C24 10 28 18 28 18" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+    <svg width={size} height={size} viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M14 44 C 24 32, 36 28, 50 28 L 78 28 C 88 28, 94 22, 100 14" stroke="currentColor" strokeWidth="11" strokeLinecap="round" fill="none"/>
+      <path d="M60 30 L 60 104" stroke="currentColor" strokeWidth="11" strokeLinecap="round" fill="none"/>
     </svg>
   )
 }

@@ -74,11 +74,9 @@ export function AuthScreen({ initialMode = 'login', onBack }: AuthScreenProps) {
         <div className="flex flex-col items-center gap-4">
           <div className="flex items-center gap-3">
             <div className="p-2.5 bg-primary rounded-xl text-primary-foreground shadow-lg shadow-primary/30">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 16 L10 16 L14 9 L20 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                <circle cx="4" cy="16" r="2" fill="currentColor"/>
-                <circle cx="14" cy="9" r="2" fill="currentColor"/>
-                <circle cx="20" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.75" fill="none" opacity="0.65"/>
+              <svg width="28" height="28" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M14 44 C 24 32, 36 28, 50 28 L 78 28 C 88 28, 94 22, 100 14" stroke="currentColor" strokeWidth="11" strokeLinecap="round" fill="none"/>
+                <path d="M60 30 L 60 104" stroke="currentColor" strokeWidth="11" strokeLinecap="round" fill="none"/>
               </svg>
             </div>
             <div>
