@@ -20,8 +20,10 @@ const JOB_TITLE_CATEGORIES = [
       'DevOps-ingenjör', 'Molnarkitekt', 'Databasadministratör',
       'QA-ingenjör', 'Testledare', 'Mjukvarutestare',
       'Cybersäkerhetsanalytiker', 'IT-säkerhetsspecialist',
-      'UX-designer', 'UI-designer', 'Data Scientist', 'Dataingenjör',
-      'Maskininlärningsingenjör', 'IT-projektledare',
+      'UX-designer', 'UI-designer', 'Produktdesigner',
+      'Data Scientist', 'Dataingenjör', 'Maskininlärningsingenjör',
+      'IT-projektledare', 'IT-arkitekt', 'Systemarkitekt',
+      'Infrastrukturingenjör', 'Teknisk skribent',
     ],
   },
   {
@@ -31,6 +33,8 @@ const JOB_TITLE_CATEGORIES = [
       'Programledare', 'Förändringsledare', 'Verksamhetsutvecklare',
       'Affärsutvecklare', 'Strategikonsult', 'Operations Manager',
       'Avdelningschef', 'Enhetschef', 'Processledare', 'VD-assistent',
+      'Förvaltningsledare', 'Leveranschef', 'Agile Coach',
+      'Portföljledare', 'Kvalitetschef', 'Serviceansvarig',
     ],
   },
   {
@@ -40,6 +44,8 @@ const JOB_TITLE_CATEGORIES = [
       'Säljare', 'Account Manager', 'Key Account Manager', 'Säljansvarig',
       'Kundansvarig', 'Telefonförsäljare', 'Affärsutvecklare',
       'Marknadskoordinator', 'Retail Manager', 'Butikssäljare', 'Regionschef Sälj',
+      'Partner Manager', 'Sales Engineer', 'Säljkoordinator',
+      'CRM-specialist', 'Kundupplevelsestrateg',
     ],
   },
   {
@@ -49,15 +55,18 @@ const JOB_TITLE_CATEGORIES = [
       'Ekonomichef', 'CFO', 'Revisionsassistent', 'Löneadministratör',
       'HR-specialist', 'HR-generalist', 'HR-chef', 'Personaladministratör',
       'Rekryterare', 'Talent Acquisition Specialist', 'Compliance Officer',
+      'Business Controller', 'Treasury Analyst', 'Internrevisor',
+      'HR Business Partner', 'People & Culture Manager',
     ],
   },
   {
     label: 'Utbildning & Vård',
     titles: [
       'Lärare', 'Förskollärare', 'Fritidspedagog', 'Elevassistent', 'Specialpedagog',
-      'Skolkurator', 'Rektor', 'Undersköterska', 'Sjuksköterska', 'Specialistsjuksköterska',
+      'Skolkurator', 'Rektor', 'Barnskötare', 'Stödpedagog', 'Lärarvikar',
+      'Undersköterska', 'Sjuksköterska', 'Specialistsjuksköterska',
       'Vårdbiträde', 'Läkarsekreterare', 'Medicinsk sekreterare',
-      'Psykolog', 'Socionom', 'Biståndshandläggare',
+      'Psykolog', 'Socionom', 'Biståndshandläggare', 'Behandlingsassistent',
     ],
   },
   {
@@ -66,7 +75,9 @@ const JOB_TITLE_CATEGORIES = [
       'Lagerarbetare', 'Lagerkoordinator', 'Lagerchef', 'Truckförare',
       'Logistiker', 'Speditör', 'Transportplanerare', 'Distributionschef',
       'Inköpare', 'Supply Chain Manager', 'Godshanterare', 'Fraktkoordinator',
-      'Tulldeklarant', 'Lagerplanerare',
+      'Tulldeklarant', 'Lagerplanerare', 'Orderplockare',
+      'Packare', 'Returhanterare', 'Lastbilschaufför',
+      'Kurirchaufför', 'Terminalarbetare',
     ],
   },
   {
@@ -76,6 +87,8 @@ const JOB_TITLE_CATEGORIES = [
       'Byggarbetare', 'Platschef', 'Konstruktör', 'Civilingenjör', 'Ingenjör',
       'CAD-tekniker', 'Fastighetstekniker', 'Fastighetsskötare',
       'Maskinoperatör', 'Drifttekniker',
+      'Projektingenjör', 'Anläggningsingenjör', 'Elmontör',
+      'Kylmontör', 'Mätningstekniker',
     ],
   },
   {
@@ -86,6 +99,8 @@ const JOB_TITLE_CATEGORIES = [
       'Grafisk designer', 'Art Director', 'Brand Manager',
       'Kommunikatör', 'PR-konsult', 'Eventkoordinator',
       'Webbanalytiker', 'E-handelsspecialist',
+      'Digital Marketing Manager', 'Performance Marketeer',
+      'Affiliate Manager', 'Redaktör', 'Innehållsstrateg',
     ],
   },
 ]
